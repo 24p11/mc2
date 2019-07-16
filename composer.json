@@ -1,0 +1,23 @@
+{
+    "config": {
+        "platform": {
+            "php" : "5.3.3"
+        }
+    },
+    "require": {
+        "monolog/monolog": "1.*",
+	    "doctrine/orm": "2.4.*",
+	    "symfony/yaml": "2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "src/",
+            "SBIM\\MiddleCare\\": "src/MiddleCare",
+            "SBIM\\DSP\\": "src/DSP",
+            "SBIM\\RedCap\\": "src/RedCap",
+            "SBIM\\Core\\Helper\\": "src/Helper",
+            "SBIM\\Core\\Log\\": "src/Log",
+            "SBIM\\Core\\CSV\\": "src/CSV"
+        }
+    }
+}

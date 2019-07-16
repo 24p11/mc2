@@ -1,0 +1,21 @@
+# Configuration par défaut de la base mysql mc2.
+# Utilisation :  
+# - copiez ce fichier et renommer le en config_db_mc2.yml
+# - renseigner les champs du DSN de la base mc2
+doctrine:
+    dbal:
+        driver: 'pdo_mysql'
+        dbname: 'dbname'
+        host: 'host.fr'
+        user: 'user'
+        password: 'password'
+        charset: 'UTF8'
+        # port: '123'
+tables:
+    dossier: 'mcdsp_dossier'
+    item: 'mcdsp_item'
+    page: 'mcdsp_page'
+    document: 'mcdsp_document'
+    item_value: 'mcdsp_item_value'
+    patient: 'mcdsp_patient'
+mc_base_url: 'http://middle_care_path_to_documents'

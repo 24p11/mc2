@@ -1,0 +1,24 @@
+# Configuration par défaut des bases Oracle MiddleCare (compatible doctrine)
+# Utilisation :  
+# - copiez ce fichier et renommer le en config_db_middlecare.yml
+# - renseigner les champs des DSN des bases MiddleCare
+sls:
+    doctrine:
+        dbal:
+            driver: 'oci8'
+            dbname: 'dbname'
+            host: 'host.fr'
+            port: '1234'
+            user: 'user'
+            password: 'password'
+            charset: 'AL32UTF8'
+lrb:
+    doctrine:
+        dbal:
+            driver: 'oci8'
+            dbname: 'dbname'
+            host: 'host.fr'
+            port: '1234'
+            user: 'user'
+            password: 'password'
+            charset: 'AL32UTF8'

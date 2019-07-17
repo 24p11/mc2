@@ -1,6 +1,4 @@
-#mc2 - ETL MiddleCare
-
-Introduction
+mc2 - ETL MiddleCare
 ===============================================================================
 
 Ce projet a pour objectif de faciliter l'extraction et l'exploitation des données des Dossiers de Service (DSP) du logiciel **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP).  
@@ -62,77 +60,82 @@ Avant toute extraction à destination d'un projet RedCap, il est conseillé de r
 Extraction MiddleCare vers base de données MySQL
 -------------------------------------------------------------------------------
 
-    # aide / man
-    > php bin/mc2_mc_to_db.php
-    
-    # extraire la liste des DSP existants
-    > php bin/mc2_mc_to_db.php --site sls --dict
-    
-    # extraire le dictionnaire d'un DSP
-    > php bin/mc2_mc_to_db.php --site sls --dict --dsp DSP2
+```bash
+# aide / man
+php bin/mc2_mc_to_db.php
 
-    # extraire l'ensemble des données d'un DSP pour une période donnée
-    > php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101
+# extraire la liste des DSP existants
+php bin/mc2_mc_to_db.php --site sls --dict
+
+# extraire le dictionnaire d'un DSP
+php bin/mc2_mc_to_db.php --site sls --dict --dsp DSP2
+
+# extraire l'ensemble des données d'un DSP pour une période donnée
+php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101
+```
 
 Extraction base de données MySQL vers fichier CSV
 -------------------------------------------------------------------------------
 
-    # aide / man
-    > php bin/mc2_db_to_csv.php
-    
-    # extraire la liste des DSP existants
-    > php bin/mc2_db_to_csv.php --site sls --dict
-    
-    # extraire le dictionnaire d'un DSP vers fichier CSV 'Excel friendly'
-    > php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP2 --excel
-    
-    # extraire le dictionnaire d'un DSP, avec filtrage des variables
-    > php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
+```bash
+# aide / man
+php bin/mc2_db_to_csv.php
 
-    # extraire l'ensemble des données d'un DSP pour une période donnée, avec filtre sur le type de document
-    > php bin/mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --type_doc 'Cs sénologie de surveillance'
+# extraire la liste des DSP existants
+php bin/mc2_db_to_csv.php --site sls --dict
 
-    # extraire l'ensemble des données d'un DSP pour une période donnée, avec filtrage des variables et vers fichier 'Excel friendly'
-    > php bin/mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --excel
+# extraire le dictionnaire d'un DSP vers fichier CSV 'Excel friendly'
+php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP2 --excel
 
+# extraire le dictionnaire d'un DSP, avec filtrage des variables
+php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
+
+# extraire l'ensemble des données d'un DSP pour une période donnée, avec filtre sur le type de document
+php bin/mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --type_doc 'Cs sénologie de surveillance'
+
+# extraire l'ensemble des données d'un DSP pour une période donnée, avec filtrage des variables et vers fichier 'Excel friendly'
+php bin/mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --excel
+```
 
 Extraction base de données MySQL vers projet RedCap
 -------------------------------------------------------------------------------
 
-    # aide / man
-    > php bin/mc2_db_to_rc.php
-    
-    # extraire le dictionnaire d'un DSP vers fichier CSV RedCap (Note : pour ouverture avec Excel = --excel)
-    > php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP2 
-    
-    # extraire le dictionnaire d'un DSP, avec filtrage des variables
-    > php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
+```bash
+# aide / man
+php bin/mc2_db_to_rc.php
 
-    # extraire les données d'un DSP pour une période donnée, avec filtrage des variables et vers projet RedCap (longitudinal) existant (API Key du projet dans config_redcap.yml )
-    > php bin/mc2_db_to_rc.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --long --inst_only --inst "Indicateur CarT" --items "VAR1 VAR2 DEB_HOSP"
+# extraire le dictionnaire d'un DSP vers fichier CSV RedCap (Note : pour ouverture avec Excel = --excel)
+php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP2 
 
+# extraire le dictionnaire d'un DSP, avec filtrage des variables
+php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
+
+# extraire les données d'un DSP pour une période donnée, avec filtrage des variables et vers projet RedCap (longitudinal) existant (API Key du projet dans config_redcap.yml )
+php bin/mc2_db_to_rc.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --long --inst_only --inst "Indicateur CarT" --items "VAR1 VAR2 DEB_HOSP"
+```
 
 Extraction MiddleCare vers fichier CSV 
 -------------------------------------------------------------------------------
 
-    # aide / man
-    > php bin/mc2_mc_to_csv.php
-    
-    # extraire la liste des DSP existants
-    > php bin/mc2_mc_to_csv.php --site sls --dict
-    
-    # extraire le dictionnaire d'un DSP vers fichier CSV 'Excel friendly'
-    > php bin/mc2_mc_to_csv.php --site sls --dict --dsp DSP2 --excel
-    
-    # extraire le dictionnaire d'un DSP, avec filtrage des variables
-    > php bin/mc2_mc_to_csv.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
+```bash
+# aide / man
+php bin/mc2_mc_to_csv.php
 
-    # extraire les données d'un DSP pour une période donnée
-    > php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101
+# extraire la liste des DSP existants
+php bin/mc2_mc_to_csv.php --site sls --dict
 
-    # extraire les données d'un DSP pour une période donnée, avec filtrage des variables et vers fichier 'Excel friendly'
-    > php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --excel
+# extraire le dictionnaire d'un DSP vers fichier CSV 'Excel friendly'
+php bin/mc2_mc_to_csv.php --site sls --dict --dsp DSP2 --excel
 
+# extraire le dictionnaire d'un DSP, avec filtrage des variables
+php bin/mc2_mc_to_csv.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
+
+# extraire les données d'un DSP pour une période donnée
+php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101
+
+# extraire les données d'un DSP pour une période donnée, avec filtrage des variables et vers fichier 'Excel friendly'
+php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --excel
+```
 
 Exemple complet - Extraction des données d'un DSP MiddleCare vers projet RedCap
 -------------------------------------------------------------------------------
@@ -141,16 +144,22 @@ L'exemple suivant illustre l'extraction d'un ensemble de variables choisies du D
 
 1 - Récuperer le dictionnaire dans la base MYSQL et sous forme de fichier CSV (pour sélection des variables à intégrer dans le projet RedCap)  
 
-    > php bin/mc2_mc_to_db.php --site sls --dict --dsp DSP96
-    > php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP96 --excel
+```bash
+php bin/mc2_mc_to_db.php --site sls --dict --dsp DSP96
+php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP96 --excel
+```
 
 2 - Charger les valeurs des variables dans la base MYSQL pour la période voulue
 
-    > php bin/mc2_mc_to_db.php --site sls --dsp DSP96 --deb 20180101 --fin 20190101
+```bash
+php bin/mc2_mc_to_db.php --site sls --dsp DSP96 --deb 20180101 --fin 20190101
+```
 
 3 - Génerer data dictionnary pour projet RedCap longitudinal avec les variables (--items) selectionnées
 
-    > php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP96 --long --inst 'Indicateur CartT DSP96' --inst_only --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'
+```bash
+php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP96 --long --inst 'Indicateur CartT DSP96' --inst_only --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'
+```
 
 4 - Créer projet RedCap 
 
@@ -187,22 +196,30 @@ L'exemple suivant illustre l'extraction d'un ensemble de variables choisies du D
 
 8 - Générer API Token puis l'ajouter dans config_redcap.yml (Applications > API)
 
-![Ecran RedCap : generer API Token](docs/images/redcap/rc_create_project_06_get_api_token.png)
+![Ecran RedCap : generer API Token](docs/images/redcap/rc_create_project_08_get_api_token.png)
 
-    api_token: '3ED7A216CCA690ADEC3574D986A8B841' #  CarT DSP96 test
+```bash
+# config_redcap.yml
+redcap:
+    ...
+    api_token: '12345678978798754656465465465'
+    ...
+```
 
 7 - Charger les données de la période voulue dans le projet RedCap
 
-    > php bin/mc2_db_to_rc.php --dsp DSP96 --deb 20180101 --fin 20190101 --long --inst_only --inst 'Indicateur CartT DSP96' --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'
+```bash
+php bin/mc2_db_to_rc.php --dsp DSP96 --deb 20180101 --fin 20190101 --long --inst_only --inst 'Indicateur CartT DSP96' --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'
+```
 
 8 - Profit !
 
 TODO 
 ===============================================================================
 
-- Refactoring : make the tables OMOP friendly
-- Ajouter CSV anonymisés d'exemple à l'annexe Format CSV
-- mc2_db_to_rc : supprimer les balises des textes libres
+- refactoring : tables OMOP friendly
+- mc2_db_to_rc : supprimer les balises HTML des textes libres
+- doc : Ajouter CSV anonymisés d'exemple à l'annexe Format CSV
 
 
 Annexe - Arborescence
@@ -212,11 +229,12 @@ Annexe - Arborescence
     /config         # configuration DB MiddleCare (config_db_middlecare.yml), DB Locale (config_db_mc2.yml) et RedCap (config_redcap.yml)
     /data           # fichiers output
     /docs           # documentation
-    /install        # éxecutable d'installation de la base Locale
+    /install        # executables d'installation de la DB Locale
     /log            # Logs
     /src            # code source PHP
     /tests          # tests 
     /vendor         # dépendances PHP (si vide > composer install)
+    composer.lock   #
     composer.json   # 
     README.md       #
 

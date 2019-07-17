@@ -85,7 +85,7 @@ $rc_service = new RCService($input_folder,$config_redcap['redcap']['api_url'],$c
 if(isset($options['dict']) && isset($options['dsp'])){
     $dsp_id = $options['dsp'];
     $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-    $main_instrument_name = isset($options["inst"]) ? $options["inst"] :'Document';//'Indicateur senologie';
+    $main_instrument_name = isset($options["inst"]) ? $options["inst"] :'Document';
     
     $main_instrument = new RCInstrument($main_instrument_name, $item_names);
     $rc_project = new RCProject('RC_'.$dsp_id,$main_instrument);
@@ -103,10 +103,6 @@ if(isset($options['dict']) && isset($options['dsp'])){
 
     $mc_extracter->export_redcap_dictionnary($file_name,$dsp_id,$rc_project);
     
-    // Pour comparaison
-    // $mc_extracter->source = MCExtractManager::SRC_MIDDLECARE;
-    // $mc_extracter->export_redcap_dictionnary($file_name,$dsp_id,$rc_project);
-    
 }else{
     // ----- RC Data
     if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
@@ -114,7 +110,7 @@ if(isset($options['dict']) && isset($options['dsp'])){
         $date_debut = new DateTime($options['deb']);
         $date_fin = new DateTime($options['fin']);
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $main_instrument_name = isset($options["inst"]) ? $options["inst"] :'Document';//'Indicateur senologie';
+        $main_instrument_name = isset($options["inst"]) ? $options["inst"] :'Document';
         
         $main_instrument = new RCInstrument($main_instrument_name, $item_names);
         $rc_project = new RCProject('RC_'.$dsp_id,$main_instrument);

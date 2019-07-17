@@ -173,17 +173,24 @@ php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP96 --long --inst 'Indicateur
 
 6 - Définir les events et désigner les instruments associés puis les renseigner dans config_redcap.yml
 
+```yml
+# config_redcap.yml
+redcap:
+    ...
+    # Longitudinal project events
+    shared_event_name: 'Patient'
+    shared_event_custom_label: ''
+    repeatable_event_name: 'CS CarT'
+    repeatable_event_custom_label: '[date_exam][type_exam][deb_hosp][fin_hosp]'
+```
+
 ![Ecran RedCap : creer projet](docs/images/redcap/rc_create_project_03_define_events.png)
 
 ![Ecran RedCap : definir events](docs/images/redcap/rc_create_project_04_define_events.png)
 
 ![Ecran RedCap : désigner instruments pour les events](docs/images/redcap/rc_create_project_05_designate_instruments_for_events.png)
 
-    # Longitudinal project events
-    shared_event_name: 'Patient'
-    shared_event_custom_label: ''
-    repeatable_event_name: 'CS CarT'
-    repeatable_event_custom_label: '[date_exam][type_exam][deb_hosp][fin_hosp]'
+
 
 7 - Dans Enable optionnal modules and customizations : Enable "Repeatable instruments and events"
 
@@ -198,7 +205,7 @@ php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP96 --long --inst 'Indicateur
 
 ![Ecran RedCap : generer API Token](docs/images/redcap/rc_create_project_08_get_api_token.png)
 
-```bash
+```yml
 # config_redcap.yml
 redcap:
     ...
@@ -225,18 +232,20 @@ TODO
 Annexe - Arborescence
 ===============================================================================
 
-    /bin            # [MAIN] executables PHP en ligne de commande
-    /config         # configuration DB MiddleCare (config_db_middlecare.yml), DB Locale (config_db_mc2.yml) et RedCap (config_redcap.yml)
-    /data           # fichiers output
-    /docs           # documentation
-    /install        # executables d'installation de la DB Locale
-    /log            # Logs
-    /src            # code source PHP
-    /tests          # tests 
-    /vendor         # dépendances PHP (si vide > composer install)
-    composer.lock   #
-    composer.json   # 
-    README.md       #
+```yml
+/bin            # [MAIN] scripts PHP CLI
+/config         # configuration DB MiddleCare (config_db_middlecare.yml), DB Locale (config_db_mc2.yml) et RedCap (config_redcap.yml)
+/data           # fichiers output
+/docs           # documentation
+/install        # script PHP CLI d'installation de la DB Locale
+/log            # Logs
+/src            # code source PHP
+/tests          # tests 
+/vendor         # dépendances PHP (si vide > composer install)
+composer.lock   
+composer.json    
+README.md       
+```
 
 Annexe - schéma bases de données MySQL
 ===============================================================================

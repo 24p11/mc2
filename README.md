@@ -27,20 +27,29 @@ Installation
 ===============================================================================
 
 - Copier le contenu de ce dossier sur un serveur avec PHP
-- Si le dossier des dépendances (vendor) est vide : 
+- Si le dossier des dépendances (vendor) est vide :
+```bash
+composer install
+```
 
-    > composer install
+- Créer les fichiers de configuration à partir des fichiers template puis configurer les connexions aux bases MiddleCare, mc2 et à l'API RedCap dans les fichiers yml correspondants
+```bash
+cd config
+cp config_db_middlecare.default config_db_middlecare.yml
+cp config_db_mc2.default config_db_mc2.yml
+cp config_redcap.default config_redcap.yml
+cd ..
+```
 
-- Configurer les connexions aux bases MiddleCare, mc2 et à l'API RedCap
-    - config/config_db_middlecare.yml
-    - config/config_db_mc2.yml
-    - config/config_redcap.yml
-
-- Vérifier la configuration et les accès aux bases
-  > php /install/mc2_install.php --check
+- Vérifier la configuration et les accès aux bases de données
+```bash
+php install/mc2_install.php --check
+```
 
 - Créer les tables de la base mc2
-  > php /install/mc2_install.php --install
+```bash
+php install/mc2_install.php --install
+```
 
 
 Usage 

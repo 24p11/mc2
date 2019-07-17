@@ -56,7 +56,6 @@ class Document{
         }
     }
 
-    // TODO add site
     public static function createFromMCData($base_url,$site,$dsp_id, $mc_data){
         $document = new Document($base_url);
         $document->site = $site;
@@ -113,13 +112,12 @@ class Document{
         return $result;
     }
 
+    // FILE_URL : CS.INTNIP || '/' || CS.CDPROD || '/' || CS.INTNIPRO || '_' || CS.REVISION || CS.EXTENSION AS FILE_URL
+    // return "http://sls-middlecare.wprod.ds.aphp.fr/middlecare/publication/".$this->patient_id."/".$this->dossier_id."/".$this->id."_".$this->extension;
     public function getURL($revision = null){
         $revision = ($this->revision === 0)
             ? ""
             : ($revision === null || $revision < 1 || $revision > $this->revision) ? $this->revision : $revision;
-        
-        // FILE_URL : CS.INTNIP || '/' || CS.CDPROD || '/' || CS.INTNIPRO || '_' || CS.REVISION || CS.EXTENSION AS FILE_URL
-        // return "http://sls-middlecare.wprod.ds.aphp.fr/middlecare/publication/".$this->patient_id."/".$this->dossier_id."/".$this->id."_".$this->extension;
         return $this->base_url."/".$this->patient_id."/".$this->dossier_id."/".$this->id."_".$revision.$this->extension;
     }
 }

@@ -48,14 +48,39 @@ date_default_timezone_set('Europe/Paris');
 
 if ($argc < 2) {
     echo "Usage : \n
-    - Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal :\n
-    > php mc2_db_to_rc.php --site [sls|lrb] --dict --dsp [id dsp] --long\n
+   
+    NAME 
+    mc2_db_to_rc.php - Extraction depuis DB locale (mc2) vers projet RedCAP
 
-    - Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal, avec filtrage des variables/items :\n
-    > php mc2_db_to_rc.php --site [sls|lrb] --dict --dsp DSP96 --long --inst 'Document CarT' --inst_only --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2 VAR83 VAR84 VAR8 VAR3 VAR4 VAR5 VAR6 VAR7 VAR9 VAR10 VAR11 VAR73 VAR74 VAR78 VAR77 VAR12 VAR81 VAR13 VAR14 VAR15 VAR82 VAR79 VAR80 VAR69 VAR75 VAR72 VAR76' --excel
+    SYNOPSIS
+    php mc2_db_to_rc.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--long] [--inst <custom_intrument_name>] [--inst_only] [--bydoctype] [--noapicall]
 
-    - Extraire les données d'un DSP pour une période donnée depuis la base locale vers fichier(s) CSV RedCap et les envoyer vers l'API RedCap(cf. config_redcap.yml):\n
-    > php mc2_db_to_rc.php --site [sls|lrb] --dsp DSP2 --deb [YYYYMMDD] --fin [YYYYMMDD] --long --inst_only --inst 'Indicateur CartT DSP96' --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2 VAR83 VAR84 ...'\n\n";
+    DESCRIPTION
+    Extraction de la base de données locale mc2 (cf. config_db_mc2.yml) vers un projet RedCap via l'API RedCap
+    
+    OPTIONS
+    - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
+    - site : sls | lrb
+    - dsp : identifiant du DSP (ex: DSP2)
+    - deb (optionnal) : date de début au format YYYYMMDD
+    - fin (optionnal) : date de fin au format YYYYMMDD
+    - items (optionnal) : liste des items à récupérer ex : 'VAR1290 VAR1312 VAR1333'
+    - long (optionnal) : a destination d'un projet redcap longitudinal
+    - inst (optionnal) : nom de l'instrument custom ex: 'Indicateurs Sénologie'
+    - inst_only (optionnal) : ne prendre que les données partagé et l'instrument custom (ne pas prendre tous les autres items)
+    - bydoctype (optionnal) : un instrument par type de document
+    - noapicall (optionnal) : n'appelle pas l'API après avoir généré les fichiers CSV
+
+    EXAMPLES
+    - Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal :
+    > php mc2_db_to_rc.php --dict --site sls --dsp DSP2 --long
+
+    - Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal, avec filtrage des variables/items :
+    > php mc2_db_to_rc.php --dict --site sls --dsp DSP96 --long --inst 'Document CarT' --inst_only --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'
+    
+    - Extraire les données d'un DSP pour une période donnée depuis la base locale vers fichier(s) CSV RedCap et les envoyer vers l'API RedCap(cf. config_redcap.yml):
+    > php mc2_db_to_rc.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --long --inst_only --inst 'Indicateurs Séno' --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2 VAR83 VAR84 ...'
+    ";
     exit(1);
 }
 

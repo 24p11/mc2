@@ -33,7 +33,6 @@ class Page{
         }
     }
 
-    // TODO SITE, DOSSIER_ID,DOCUMENT_TYPE, PAGE_LIBELLE, PAGE_CODE, PAGE_ORDRE
     public static function createFromMCData($dsp_id,$mc_data){
         $page = new Page();
         var_dump($mc_data);

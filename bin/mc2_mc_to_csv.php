@@ -54,15 +54,38 @@ use Symfony\Component\Yaml\Yaml;
 date_default_timezone_set('Europe/Paris');
 
 if ($argc < 2) {
-    echo "Usage : \n
-    - Extraire la liste des DSP de MiddleCare vers un fichier CSV :\n
-    > php mc2_mc_to_csv.php --site [sls|lrb] --dict\n
-    - Extraire le dictionnaire d'un DSP de MiddleCare donné vers un fichier CSV :\n
-    > php mc2_mc_to_csv.php --site [sls|lrb] --dict --dsp [id dsp]\n
-    - Extraire le dictionnaire d'un DSP de MiddleCare avec filtrage des variables/items vers un fichier CSV :\n
-    > php mc2_mc_to_csv.php --site [sls|lrb] --dict --dsp [id dsp] --items 'VAR1290 VAR1312 VAR1333 VAR1358 VAR1370 VAR1418 VAR1419 VAR1426 VAR1481 VAR1496 VAR1497 VAR1498 VAR1501 VAR1504 VAR1505 VAR1508 VAR1509 VAR1515 VAR1516 VAR1525 VAR1711 VAR1780 VAR1809 VAR1817 VAR1940 VAR1941 VAR1989 VAR1990 VAR1992 VAR2124 VAR2128 VAR2140'\n
-    - Extraire les données d'un DSP MiddleCare pour une période donnée vers un ou plusieurs fichier(s) CSV :\n
-    > php mc2_mc_to_csv.php --site [sls|lrb] --dsp DSP2 --deb [YYYYMMDD] --fin [YYYYMMDD]\n\n";
+    echo "
+    NAME 
+    mc2_mc_to_csv.php - YAGNI! Extraction depuis MiddleCare vers fichier(s) CSV
+
+    SYNOPSIS
+    php mc2_mc_to_csv.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--type_doc <doc_type>]
+
+    DESCRIPTION
+    Extraction des données de MiddleCare (cf. config_db_middlecare.yml) vers base de données locale mc2 (cf. config_db_mc2.yml)
+    
+    OPTIONS
+    - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
+    - site : sls | lrb
+    - dsp : identifiant du DSP (ex: DSP2)
+    - deb (optionnal) : date de début au format YYYYMMDD
+    - fin (optionnal) : date de fin au format YYYYMMDD
+    - items (optionnal) : liste des items à récupérer ex : 'VAR1290 VAR1312 VAR1333'
+    - excel (optionnal): CSV excel friendly (BOM,UTF8 etc)
+    
+    EXAMPLES
+    - Extraire la liste des DSP depuis la base locale vers un fichier CSV :
+    > php mc2_mc_to_csv.php --dict --site lrb 
+    
+    - Extraire le dictionnaire d'un DSP donné depuis la base locale vers un fichier CSV :
+    > php mc2_mc_to_csv.php --dict --site sls --dsp DSP2
+    
+    - Extraire le dictionnaire d'un DSP avec filtrage des variables/items depuis la base locale vers un fichier CSV :
+    > php mc2_mc_to_csv.php --dict --site sls --dsp DSP2 --items 'VAR1290 VAR1312 VAR1333 VAR1358 VAR1370 VAR1418 VAR1419 VAR1426 VAR1481 VAR1496 VAR1497 VAR1498 VAR1501 VAR1504 VAR1505 VAR1508 VAR1509 VAR1515 VAR1516 VAR1525 VAR1711 VAR1780 VAR1809 VAR1817 VAR1940 VAR1941 VAR1989 VAR1990 VAR1992 VAR2124 VAR2128 VAR2140'
+    
+    - Extraire les données d'un DSP pour une période donnée depuis la base locale vers un ou plusieurs fichier(s) CSV
+    > php mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 
+    ";
     exit(1);
 }
 

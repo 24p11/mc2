@@ -51,10 +51,11 @@ class DocumentRepository{
     public function checkConnection(){
         try{
             if ($this->db->connect())
-                return true; // echo "Connection Successful\n";
+                return true;
         } 
         catch (\Exception $e) {
-            return false; // echo "Connection unsuccessful\n";
+            $this->logger>addError("Can't connect to DocumentRepository DB", array('exception' => $e));
+            return false;
         }
     }
 
@@ -83,7 +84,6 @@ class DocumentRepository{
         return $result;
     }
 
-    // TODO add search filter : by page, by string in description, etc
     public function findDocumentByDossierId($dossier_id,$date_debut, $date_fin,array $patient_ids = null){
         $query_patients = ($patient_ids === null || count($patient_ids) < 1) 
             ? "" : "AND patient_id in(".join(',',array_map(function($v){ return "'".$v."'"; },$patient_ids)).")";
@@ -290,9 +290,8 @@ class DocumentRepository{
             ? "" : "AND var in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
         $query_deleted_document = "UPDATE ".$this->get_document_table()." SET deleted = 1 WHERE site = :site AND nipro IN (:nipros)";
         $query_deleted_item_values = "UPDATE ".$this->get_item_value_table()." SET deleted = 1 WHERE site = :site AND nipro IN(:nipros) {$query_items}";
-        $values = ['site' => $this->site,'nipros' => $nipros];
-        //$types = ['site' => Connection::PARAM_STR, 'nipros' => Connection::PARAM_INT_ARRAY];
-        $types = ['site' => PDO::PARAM_STR, 'nipros' => Connection::PARAM_INT_ARRAY];
+        $values = array('site' => $this->site,'nipros' => $nipros);
+        $types = array('site' => PDO::PARAM_STR, 'nipros' => Connection::PARAM_INT_ARRAY);
         $stmt = $this->db->executeQuery($query_deleted_document,$values,$types);
         $stmt = $this->db->executeQuery($query_deleted_item_values,$values,$types);
     }

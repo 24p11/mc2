@@ -51,13 +51,33 @@ use Symfony\Component\Yaml\Yaml;
 date_default_timezone_set('Europe/Paris');
 
 if ($argc < 2) {
-    echo "Usage : \n
-    - Extraire la liste des DSP de MiddleCare et les enregistrer dans la base locale :\n
-    > php mc2_mc_to_db.php --site [sls|lrb] --dict\n
-    - Extraire le dictionnaire d'un DSP de MiddleCare donné et les enregistrer dans la base locale :\n
-    > php mc2_mc_to_db.php --site [sls|lrb] --dict --dsp [id dsp]\n
-    - Extraire les données d'un DSP MiddleCare pour une période donnée et les enregistrer dans la base locale :\n
-    > php mc2_mc_to_db.php --site [sls|lrb] --dsp DSP2 --deb [YYYYMMDD] --fin [YYYYMMDD]\n\n";
+    echo "
+    NAME 
+    mc2_mc_to_db.php - Extraction depuis MiddleCare vers DB locale (mc2)
+
+    SYNOPSIS
+    php mc2_mc_to_db.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin>
+
+    DESCRIPTION
+    Extraction des données de MiddleCare vers base de données locale mc2 (cf. config_db_middlecare.yml et config_db_mc2.yml)
+    
+    OPTIONS
+    - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
+    - site : sls | lrb
+    - dsp : identifiant du DSP (ex: DSP2)
+    - deb (optionnal) : date de début au format YYYYMMDD
+    - fin (optionnal) : date de fin au format YYYYMMDD
+    
+    EXAMPLES
+    - Extraire la liste des DSP de MiddleCare et les enregistrer dans la base locale :
+    > php mc2_mc_to_db.php --dict --site lrb 
+
+    - Extraire le dictionnaire d'un DSP de MiddleCare donné et les enregistrer dans la base locale :
+    > php mc2_mc_to_db.php --dict --site sls --dsp DSP2
+
+    - Extraire les données d'un DSP MiddleCare pour une période donnée et les enregistrer dans la base locale :
+    > php mc2_mc_to_db.php --site sls --dsp DSP2 --deb 20180101 --fin 20180201
+    ";
     exit(1);
 }
 

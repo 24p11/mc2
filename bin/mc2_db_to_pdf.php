@@ -57,6 +57,7 @@ if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
     $date_debut = new DateTime($options['deb']);
     $date_fin = new DateTime($options['fin']);
 
+    // TODO : also search by IPP
     $patient_ids = isset($options["nip"]) ? explode(" ",$options["nip"]) : null;
     
     $documents = $document_repo->findDocumentByDossierId($dsp_id,$date_debut, $date_fin,$patient_ids);

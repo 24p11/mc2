@@ -69,7 +69,7 @@ class RCItem{
 
     // TODO lower case Variable names & Form name to remove warning in RC when importing DD
     public function to_array(){
-        return [
+        return array(
             RCDictionnary::FIELD_NAME_INDEX => $this->id,
             RCDictionnary::FORM_NAME_INDEX => str_replace(' ','_',$this->form_name),
             RCDictionnary::SECTION_HEADER_INDEX => $this->section_header,
@@ -88,7 +88,7 @@ class RCItem{
             RCDictionnary::MATRIX_GROUP_INDEX => $this->matrix_group_name,
             RCDictionnary::MATRIX_RANKING_INDEX => $this->matrix_ranking,
             RCDictionnary::ANNOTATION_INDEX => $this->annotation
-        ];
+        );
     }
 
     /**
@@ -99,7 +99,7 @@ class RCItem{
 	 * @param string $liste_val
 	 */
 	private static function mctype_to_rctype($mc_type, $mc_options, $liste_val){
-		$rc_type = ['type' => '', 'note' => '', 'validation' => '', 'choices' => ''];
+		$rc_type = array('type' => '', 'note' => '', 'validation' => '', 'choices' => '');
 		switch ($mc_type) {
 			case 'BAC':
 				$rc_type['type'] = 'yesno';

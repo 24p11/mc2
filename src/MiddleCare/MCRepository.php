@@ -33,10 +33,11 @@ class MCRepository{
     public function checkConnection(){
         try{
             if ($this->db_middlecare->connect())
-                return true; // echo "Connection Successful\n";
+                return true;
         } 
         catch (\Exception $e) {
-            return false; // echo "Connection unsuccessful\n";
+            $this->logger>addError("Can't connect to MCRepository DB", array('exception' => $e));
+            return false;
         }
     }
 
@@ -359,16 +360,8 @@ class MCRepository{
         $stmt = $this->db_middlecare->prepare($query);
         $stmt->execute();
         $result = array();
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC))//FetchMode::Associative))
+        while($row = $stmt->fetch(PDO::FETCH_ASSOC))
             $result[] = $row;
         return $result;
-
-        // OLD pure OCI8
-		// $statement = @ociparse($this->db_middlecare, $query);
-		// oci_execute($statement);
-        // $result = array();
-        // while ($row = oci_fetch_array($statement, OCI_ASSOC | OCI_RETURN_LOBS | OCI_RETURN_NULLS))
-        //     $result[] = $row;
-		// return $result;
     }
 }

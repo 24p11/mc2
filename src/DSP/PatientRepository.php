@@ -10,7 +10,7 @@ class PatientRepository{
 
     private $db = null;
     private $logger;
-
+    
     private $patient_table = null;
 
     const DEFAULT_PATIENT_TABLE = "mcdsp_patient";
@@ -33,10 +33,11 @@ class PatientRepository{
     public function checkConnection(){
         try{
             if ($this->db->connect())
-                return true; // echo "Connection Successful\n";
+                return true;
         } 
         catch (\Exception $e) {
-            return false; // echo "Connection unsuccessful\n";
+            $this->logger>addError("Can't connect to PatientRepository DB", array('exception' => $e));
+            return false;
         }
     }
 

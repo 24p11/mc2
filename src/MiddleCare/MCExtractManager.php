@@ -97,11 +97,13 @@ final class MCExtractManager{
 	/**
 	 * Exporte les données d'un DSP (depuis MiddleCare ou la base Locale) vers un fichier CSV.
 	 * 
-	 * TODO add CSV output period : 1 CSV par AN / MOIS / JOUR
 	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
 	 * @param \DateTime $date_debut
      * @param \DateTime $date_fin
 	 * @param string[] $item_names (option) liste de nom d'items
+	 * @param string $page_name
+	 * @param string $type_doc type de document voulu
+	 * @param string $interval periode comprise dans un fichier csv (1 fichier CSV par mois = P1M, par 2 ans = P2Y)
 	 * @return string[] nom de(s) CSV généré(s)
 	 */
 	public function export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null, $interval = null){
@@ -282,7 +284,6 @@ final class MCExtractManager{
 	public function export_redcap_data_by_patient_from_db($file_name_prefix, $dsp_id, $date_debut, $date_fin, array $nips = null, $rc_project){
 		$this->logger->addInfo("-------- Exporting SITE=".$this->site." DSP_ID={$dsp_id} RC data by patient from local DB to CSV={$file_name_prefix}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT)));
 		$file_names = array();
-		$CHUNK_COUNT = 10;
 		// Get RC dictionnary
 		if($rc_project->event_as_document_type === false){
 			$mc_items = $this->get_items($dsp_id);
@@ -294,6 +295,8 @@ final class MCExtractManager{
 		$data_column_names = $rc_dictionnary->get_data_column_names();
 		// Get all patient from period
 		$patient_ids = $this->document_repository->findAllPatientId($dsp_id, $date_debut, $date_fin);
+
+		$CHUNK_COUNT = 10;
 		$chunks_of_patientids = array_chunk($patient_ids, $CHUNK_COUNT);
 		$chunk_i = 0;
 		foreach($chunks_of_patientids as $patientids_chunk){
@@ -330,16 +333,14 @@ final class MCExtractManager{
 				foreach($columns_completed as $value)
 					$completes[$value] = null;
 				foreach($mc_data as $data){
-					// WIP for event as document type
 					$tmp = ArrayHelper::reorderColumns(
 						$this->transcode_mc_data_to_rc_data($data,$rc_dictionnary,$rc_project->event_as_document_type),
 						$data_column_names
 					);
-
 					if(!array_key_exists($tmp['IPP'],$ipps)){
 						// ajouter une ligne pour l'event patient (IPP,redcap_event_name,redcap_repeat_instrument,redacap_repeat_instance...)
 						$patient = array_slice($tmp, 0, 1, true) 
-							+ ['redcap_event_name' => $shared_event_name,'redcap_repeat_instrument'=> null, 'redcap_repeat_instance' => null] 
+							+ array('redcap_event_name' => $shared_event_name,'redcap_repeat_instrument'=> null, 'redcap_repeat_instance' => null) 
 							+ array_slice($tmp, 1, $shared_event_variable_count, true)
 							+ array_map(function() {}, array_slice($tmp, $shared_event_variable_count , null, true))
 							+ $completes;
@@ -350,7 +351,7 @@ final class MCExtractManager{
 					$redcap_repeat_instance = $ipps[$tmp['IPP']];
 					// ajouter une ligne pour le repeatable form
 					$rc_data[] = array_slice($tmp, 0, 1, true) 
-						+ ['redcap_event_name' => $repeatable_event_name,'redcap_repeat_instrument'=> null, 'redcap_repeat_instance' => $redcap_repeat_instance]
+						+ array('redcap_event_name' => $repeatable_event_name,'redcap_repeat_instrument'=> null, 'redcap_repeat_instance' => $redcap_repeat_instance)
 						+ array_map(function() {}, array_slice($tmp, 1, $shared_event_variable_count, true))
 						+ array_slice($tmp, $shared_event_variable_count, null, true)
 						+ $completes;
@@ -386,12 +387,12 @@ final class MCExtractManager{
 			foreach ($tmp as $value)
 				$pages[$value['PAGE_NOM']] = $value['PAGE_LIBELLE']; 
 				
-			$all_dsp_info[$dsp_id] = [
+			$all_dsp_info[$dsp_id] = array(
 				'nom' => str_replace(["/"], ' ', $dsp['NOM']),
 				'description' => $dsp['LIBELLE'],
 				'pages' => $pages === null ? [] : $pages,
 				'items' => $items === null ? [] : $items
-			];
+			);
 		}
 		$helper_md_header = '<meta charset="utf-8">'.PHP_EOL;
 		$helper_md_title_line = "===============================================================================".PHP_EOL;
@@ -399,7 +400,7 @@ final class MCExtractManager{
 		$helper_md_markdown_js_line = '<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>'.PHP_EOL;
 
 		// ---- MD Index File
-		$main_md = [$helper_md_header];
+		$main_md = array($helper_md_header);
 		$main_md[] = '**MiddleCare - DSP**'.PHP_EOL;
 		// pour chaque DSP
 		foreach($all_dsp_info as $dsp_id => $dsp_info){
@@ -422,7 +423,7 @@ final class MCExtractManager{
 			$main_md[] = PHP_EOL;
 
 			// ---- MD Single DSP File
-			$dsp_md = [$helper_md_header];
+			$dsp_md = array($helper_md_header);
 			$dsp_md[] = "**MiddleCare - {$dsp_title}**".PHP_EOL;
 			$dsp_md[] = "Overview".PHP_EOL;
 			$dsp_md[] = $helper_md_title_line;
@@ -470,7 +471,6 @@ final class MCExtractManager{
 				? $this->mc_repository->getDSPItems($dsp_id)
 				: array_map(function($v){ return $v->toMCArray(); }, $this->dossier_repository->findItemByDossierId($dsp_id));
 		}else{
-			// TODO 
 			$items = array();
 			// get document_type
 			$pages = $this->dossier_repository->findPageByDossierId($dsp_id);
@@ -479,7 +479,6 @@ final class MCExtractManager{
 			$doc_pages = array();
 			$i = 0;
 			foreach ($doc_types as $doc_type) {
-				//echo $doc_type;
 				$doc_pages[$doc_type] = array();
 				foreach ($pages as $page) {
 					// do not take page_code = 4 (donnée d'inclusion)
@@ -500,7 +499,6 @@ final class MCExtractManager{
 						$temp_items[$key]->id = $temp_items[$key]->id."_".$doc_type;
 					}
 					$items = array_merge($items, $temp_items);
-					//echo count($items)."\n";
 				}
 			}
 			$items = array_map(function($v){ return $v->toMCArray(); }, $items);
@@ -510,7 +508,6 @@ final class MCExtractManager{
 			// Cas particulier des items séparateurs (MCTYPE = 'SEP') où l'item_id est null dans MiddleCare
 			if(empty($item_id))
 				$item_id = $item['MCTYPE']."_".$item['LIGNE'];
-			//$item_infos[$item_id] = $item;
 			$item_infos[] = $item;
 		}
 		return $item_infos;
@@ -530,11 +527,7 @@ final class MCExtractManager{
 			$item_type = array();
 			$item_liste_values = array();
 			$items_keys = array_keys($rows[0]);
-			print_r($item_info);
-			// $this->logger->addDebug();
 			foreach ($items_keys as $key){
-				print_r($key);
-				//$key_exist = array_key_exists($key,$item_info);
 				// get key
 				$key_exist = false;
 				foreach ($item_info as $value) {
@@ -549,10 +542,6 @@ final class MCExtractManager{
 					$item_page[$key] = $item_information['PAGE_LIBELLE'];
 					$item_type[$key] = $item_information['MCTYPE'];
 					$item_liste_values[$key] = $item_information['LIST_VALUES'];
-					// $item_lib[$key] = $item_info[$key]['LIBELLE_BLOC'];
-					// $item_page[$key] = $item_info[$key]['PAGE_LIBELLE'];
-					// $item_type[$key] = $item_info[$key]['MCTYPE'];
-					// $item_liste_values[$key] = $item_info[$key]['LIST_VALUES'];
 				}else{
 					$item_lib[$key] = $key;
 					$item_page[$key] = $key;

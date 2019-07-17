@@ -34,7 +34,7 @@ if ($argc < 2) {
     exit(1);
 }
 
-$longopts  = [ "check","install","yuml","site:"];
+$longopts  = array("check","install","yuml","site:");
 $options = getopt("", $longopts);
 $now = new DateTime();
 

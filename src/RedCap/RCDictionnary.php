@@ -35,7 +35,7 @@ class RCDictionnary{
 		$rc_dictionnay = new self($dsp_id);
 		$rc_dictionnay->project = $rc_project;
 		
-		$where = ['ITEM_ID' => $rc_project->main_instrument->item_names];
+		$where = array('ITEM_ID' => $rc_project->main_instrument->item_names);
 		// set order of dictionnary fields
         $ordered_dsp_items = array_merge(
             // main instrument shared fields 
@@ -69,7 +69,7 @@ class RCDictionnary{
 		$rc_dictionnay = new self($dsp_id);
 		$rc_dictionnay->project = $rc_project;
 		
-		$where = ['ITEM_ID' => $rc_project->main_instrument->item_names];
+		$where = array('ITEM_ID' => $rc_project->main_instrument->item_names);
 		// set order of dictionnary fields
         $ordered_dsp_items = array_merge(
             // main instrument shared fields 
@@ -79,11 +79,6 @@ class RCDictionnary{
             // other fields
             ($rc_project->main_instrument_only === true ? [] : ArrayHelper::filter($mc_items,null,$where,true))
 		);
-		
-		// foreach ($ordered_dsp_items as $key => $value){
-		// 	if (substr($value["ITEM_ID"], 0, strlen('VAR2112')) === 'VAR2112')
-		// 		echo $value["ITEM_ID"]." | ".$value["PAGE_LIBELLE"] ."\n";
-		// }
 
         $redcap_data = array();
         $main_instrument_section_headers = array();
@@ -100,9 +95,7 @@ class RCDictionnary{
                 $section_header = '';
             }
             $rc_item = new RCItem($item,$section_header);
-			$rc_item_array = $rc_item->to_array();
-
-			$rc_dictionnay->items[] = $rc_item_array;   
+			$rc_dictionnay->items[] = $rc_item->to_array();
         }
         return $rc_dictionnay;
 	}
@@ -159,24 +152,13 @@ class RCDictionnary{
 			$var_name_event = $var_name. "_".$document_type;
 			foreach ($this->items as $item) {
 				if($var_name === $item[self::FIELD_NAME_INDEX]){
-					//echo $item[self::FIELD_NAME_INDEX] ." VS ". $var_name."\n";
 					return $item;
 				}elseif(substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name_event)) === $var_name_event)
 					return $item;
-				// elseif(substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name)) === $var_name){
-				// 	echo $item[self::FIELD_NAME_INDEX] ." VS ". $var_name."\n";
-				// 	// $item['is_empty'] = true;
-				// 	return $item;
-				// }
-				// elseif($item[self::FIELD_NAME_INDEX] === $var_name)
 			}
-			//echo 'Pas trouvé avec le doct : ' .$var_name_event ." VS ". $var_name."\n";
 			foreach ($this->items as $item) {
-				if(substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name)) === $var_name){
-					// echo 'Pas trouvé avec le doct : ' .$item[self::FIELD_NAME_INDEX] ." VS ". $var_name."\n";
-					// $item['is_empty'] = true;
+				if(substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name)) === $var_name)
 					return $item;
-				}
 			}
 		}
 		return null;
@@ -237,10 +219,24 @@ class RCDictionnary{
 				// TEMP si libellé commence par 'Date' => mettre OPTIONS à D_CALENDAR
 				$options = (substr($item_libelle, 0, 4) === "Date") ? "D_CALENDAR": '';
 				$mcgv [] = array(
-					'DOSSIER_ID' => $dsp_id, 'PAGE_NOM' => $page_name, 'PAGE_LIBELLE' => $page_lib, 'BLOC_NO' => $bloc_no, 'BLOC_LIBELLE' => '', 'LIGNE' => '', 
-					'ITEM_ID' => $item_name, 'TYPE' => 'ITEMCHAR2', 'MCTYPE' => 'TXT', 
-					'LIBELLE' => $item_libelle, 'LIBELLE_BLOC' => $item_libelle, 'LIBELLE_SECONDAIRE' => $item_libelle,
-					'DETAIL' => '', 'TYPE_CONTROLE' => '', 'FORMULE' => '', 'OPTIONS' => $options, 'LIST_NOM' => '', 'LIST_VALUES' => ''
+					'DOSSIER_ID' => $dsp_id,
+					'PAGE_NOM' => $page_name,
+					'PAGE_LIBELLE' => $page_lib,
+					'BLOC_NO' => $bloc_no,
+					'BLOC_LIBELLE' => '',
+					'LIGNE' => '', 
+					'ITEM_ID' => $item_name,
+					'TYPE' => 'ITEMCHAR2',
+					'MCTYPE' => 'TXT', 
+					'LIBELLE' => $item_libelle,
+					'LIBELLE_BLOC' => $item_libelle,
+					'LIBELLE_SECONDAIRE' => $item_libelle,
+					'DETAIL' => '',
+					'TYPE_CONTROLE' => '',
+					'FORMULE' => '',
+					'OPTIONS' => $options,
+					'LIST_NOM' => '',
+					'LIST_VALUES' => ''
 				);
 			}
 		}

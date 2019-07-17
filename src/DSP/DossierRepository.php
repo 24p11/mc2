@@ -57,10 +57,11 @@ class DossierRepository{
     public function checkConnection(){
         try{
             if ($this->db->connect())
-                return true; // echo "Connection Successful\n";
+                return true;
         } 
         catch (\Exception $e) {
-            return false; // echo "Connection unsuccessful\n";
+            $this->logger>addError("Can't connect to DossierRepository DB", array('exception' => $e));
+            return false;
         }
     }
 
@@ -114,7 +115,6 @@ class DossierRepository{
         return $result;
     }
 
-    // TODO search filter : by page, by string in description, etc
     public function findItemByDossierId($dossier_id,array $item_names = null){
         $query_items = ($item_names === null || count($item_names) < 1) 
             ? "" : "AND item_id in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";

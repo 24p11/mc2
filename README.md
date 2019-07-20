@@ -1,7 +1,7 @@
 mc2 - ETL MiddleCare
 ===============================================================================
 
-mc2 a pour objectif d'automatiser l'extraction des données du Dossier Patient Informatisé (DPI) **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP). Seuls les dossiers structurés (Dossiers de Service (DSP)) de l'application  sont extractibles. L'application propose en outre différents formats de sorties pour faciliter l'exploitation de ces données.
+mc2 a pour objectif d'automatiser l'extraction des données du Dossier Patient Informatisé (DPI) **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP). Seuls les dossiers structurés (Dossiers de Service (DSP)) de l'application  sont extractibles. L'application propose en outre différents formats de sortie pour faciliter l'exploitation des données.
 
 L'extraction est réalisée en 2 temps:
 - une première fonction permet l'extraction du **dictionnaire** des variables disponibles dans un DSP (= la structure des formulaires MiddleCare)
@@ -11,18 +11,20 @@ L'ensemble de ces données peut être enregistré au format **CSV**, dans une ba
 
 **Note importante :**
 
-Afin de ne pas solliciter inutilement la base de production de MiddleCare, il est conseillé de récupèrer l'ensemble des données d'un DSP dans une base de donnée MySQL (par exemple la nuit, automatiquement et périodiquement) puis d'extraire de cette base les données voulues sous forme de fichiers CSV ou de projet RedCap.  
+Afin de ne pas solliciter inutilement la base de production de MiddleCare, il est conseillé  d'extraire les données d'un DSP dans une base de donnée MySQL (par exemple la nuit, automatiquement et périodiquement) puis d'exporter de cette base les données d'intérêt dans un fichiers CSV ou un projet RedCap.  
 
-Ce document fourni des exemples de chacune de ces étapes ainsi qu'un exemple complet de chargement d'un DSP MiddleCare vers un projet RedCap.
+Ce document fourni des exemples de chacune de ces étapes permettant l'extraction d'un DSP ainsi qu'un exemple complet de chargement d'un DSP MiddleCare vers un projet RedCap.
 
 Prérequis  
 ===============================================================================
+- DPI **MiddleCare**
 - PHP 5.3 + OCI8
 - Composer
 - MySQL
 - Optionnellement : 
   - projet RedCap avec API Key
 
+NB : mc2 a été développé de façon a pouvoir interroger plusieurs instances de bases de données **MiddleCare** (par exemple dans le cadre d'un groupe hospitalier composé de plusieurs sites).
 
 Installation
 ===============================================================================
@@ -58,7 +60,7 @@ Usage
 
 Avant toute extraction à destination d'un projet RedCap, il est conseillé de rassembler les informations suivantes:  
 
-- **Site** : le trigramme du site du DSP = sls ou lrb 
+- **Site** : le nom de l'instance **MiddleCare**
 
 - **DSP_ID** : l'identifiant MiddleCare du DSP, ex: Sénologie = DSP2 (cf extraction de la liste des DSP existants)
 
@@ -165,7 +167,7 @@ php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP96 --excel
 php bin/mc2_mc_to_db.php --site sls --dsp DSP96 --deb 20180101 --fin 20190101
 ```
 
-3 - Génerer data dictionnary pour projet RedCap longitudinal avec les variables (--items) selectionnées
+3 - Génerer le data dictionnary utilisé par RedCap, ici par exemple dans un format d'étude longitudinal, grâce à l'option --items permettant de choisir les variables selectionnées
 
 ```bash
 php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP96 --long --inst 'Indicateur CartT DSP96' --inst_only --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'

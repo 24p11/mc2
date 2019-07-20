@@ -1,9 +1,11 @@
 mc2 - ETL MiddleCare
 ===============================================================================
 
-Ce projet a pour objectif de faciliter l'extraction et l'exploitation des données des Dossiers de Service (DSP) du logiciel **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP).  
+mc2 a pour objectif d'automatiser l'extraction des données du Dossier Patient Informatisé (DPI) **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP). Seuls les dossiers structurés (Dossiers de Service (DSP)) de l'application  sont extractibles. L'application propose en outre différents formats de sorties pour faciliter l'exploitation de ces données.
 
-Parmi les données extractibles, une distinction est faite entre le **dictionnaire** des variables disponibles dans un DSP (= la structure des formulaires MiddleCare) et les **valeurs** que prennent ces variables à chaque édition d'un document via les formulaires MiddleCare.
+L'extraction est réalisée en 2 temps:
+- une première fonction permet l'extraction du **dictionnaire** des variables disponibles dans un DSP (= la structure des formulaires MiddleCare)
+- une seconde permet l'extraction des **valeurs** de ces variables telles qu'elles sont renseignées dans les formulaires.
 
 L'ensemble de ces données peut être enregistré au format **CSV**, dans une base de données **MySQL** ou dans un projet **RedCap**.
 
@@ -12,7 +14,6 @@ L'ensemble de ces données peut être enregistré au format **CSV**, dans une ba
 Afin de ne pas solliciter inutilement la base de production de MiddleCare, il est conseillé de récupèrer l'ensemble des données d'un DSP dans une base de donnée MySQL (par exemple la nuit, automatiquement et périodiquement) puis d'extraire de cette base les données voulues sous forme de fichiers CSV ou de projet RedCap.  
 
 Ce document fourni des exemples de chacune de ces étapes ainsi qu'un exemple complet de chargement d'un DSP MiddleCare vers un projet RedCap.
-
 
 Prérequis  
 ===============================================================================

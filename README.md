@@ -1,7 +1,7 @@
 mc2 - ETL MiddleCare
 ===============================================================================
 
-mc2 a pour objectif d'automatiser l'extraction des données du Dossier Patient Informatisé (DPI) **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP). Seuls les dossiers structurés (Dossiers de Service (DSP)) de l'application  sont extractibles. L'application propose en outre différents formats de sortie pour faciliter l'exploitation des données.
+mc2 a pour objectif d'automatiser l'extraction des données du Dossier Patient Informatisé (DPI) **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP). Seuls les dossiers structurés (Dossiers de Service (DSP)) de l'application  sont extractibles. L'application propose en outre différents formats de persistance dans une base de données ou d'export pour faciliter l'exploitation des données.
 
 L'extraction est réalisée en 2 temps:
 - une première fonction permet l'extraction du **dictionnaire** des variables disponibles dans un DSP (= la structure des formulaires MiddleCare)
@@ -24,7 +24,7 @@ Prérequis
 - Optionnellement : 
   - projet RedCap avec API Key
 
-NB : mc2 a été développé de façon a pouvoir interroger plusieurs instances de bases de données **MiddleCare** (par exemple dans le cadre d'un groupe hospitalier composé de plusieurs sites).
+NB : mc2 a été développé de façon a pouvoir interroger plusieurs instances de bases de données **MiddleCare** (par exemple dans le cadre d'un groupe hospitalier composé de plusieurs établissements). Chaque instance est indentifiée par une variable **Site** .
 
 Installation
 ===============================================================================
@@ -62,7 +62,7 @@ Avant toute extraction à destination d'un projet RedCap, il est conseillé de r
 
 - **Site** : le nom de l'instance **MiddleCare**
 
-- **DSP_ID** : l'identifiant MiddleCare du DSP, ex: Sénologie = DSP2 (cf extraction de la liste des DSP existants)
+- **DSP_ID** : l'identifiant **MiddleCare** du DSP, ex: Sénologie = DSP2 (cf extraction de la liste des DSP existants)
 
 - **Période** : les dates de début et de fin (non incluse) de l'extraction au format AAAAMMJJ,  ex: Année 2018 = [début : 20180101, fin : 20190101]
 

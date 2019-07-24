@@ -22,7 +22,9 @@ class DocumentRepository{
     public $base_url = '';
 
     const DEFAULT_DOCUMENT_TABLE = "mcdsp_document";
-    const DOCUMENT_COLUMNS = "nipro,patient_id,dossier_id,site,type,venue,patient_age,patient_poids,patient_taille,date_creation,date_modification,revision,extension,operateur,created,modified,version,deleted";// = *
+    // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE (categorie,provisoire,service)
+    
+    const DOCUMENT_COLUMNS = "nipro,patient_id,dossier_id,site,type,venue,patient_age,patient_poids,patient_taille,date_creation,date_modification,revision,extension,operateur,provisoire,categorie,service,created,modified,version,deleted";// = *
 
     const DEFAULT_ITEM_VALUE_TABLE = "mcdsp_item_value";
     const ITEM_VALUE_COLUMNS = "nipro,patient_id,dossier_id,site,page_nom,var,val,created,modified,version,deleted";// = *
@@ -189,7 +191,7 @@ class DocumentRepository{
     public function upsertDocument($document){
         $query = "INSERT INTO ".$this->get_document_table()." (".self::DOCUMENT_COLUMNS.") 
             VALUES(:document_id, :patient_id, :dossier_id, :site, :type, :venue, :patient_age, :patient_poids, :patient_taille, :date_creation, :date_modification, :revision, :extension, :operateur, NOW(), NOW(), 0, 0)
-            ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), modified = VALUES(modified), version = version + 1, deleted = 0";
+            ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), provisoire = VALUES(provisoire), categorie = VALUES(categorie), service = VALUES(service), modified = VALUES(modified), version = version + 1, deleted = 0";
             
         $stmt = $this->db->prepare($query);
         $stmt->bindValue('document_id', $document->id);
@@ -206,6 +208,9 @@ class DocumentRepository{
         $stmt->bindValue('revision', $document->revision);
         $stmt->bindValue('extension', $document->extension);
         $stmt->bindValue('operateur', $document->operateur);
+        $stmt->bindValue('provisoire', $document->provisoire);
+        $stmt->bindValue('categorie', $document->categorie);
+        $stmt->bindValue('service', $document->service);
         $count = $stmt->execute();
         return $count;
     }
@@ -231,12 +236,15 @@ class DocumentRepository{
                 .$document->date_modification->format(DateHelper::MYSQL_FORMAT)."','"
                 .$document->revision."','"
                 .$document->extension."','"
-                .$document->operateur."',"
+                .$document->operateur."','"
+                .$document->provisoire."','"
+                .$document->categorie."','"
+                .$document->service."',"
                 ." NOW(), NOW(), 0, 0)";
             $count_document--;
             $query .= ($count_document === 0) ? "" : ",";
         }
-        $query .= " ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), modified = VALUES(modified), version = version + 1, deleted = 0";
+        $query .= " ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), provisoire = VALUES(provisoire), categorie = VALUES(categorie), service = VALUES(service), modified = VALUES(modified), version = version + 1, deleted = 0";
         
         $stmt = $this->db->prepare($query); 
         $count = $stmt->execute();
@@ -303,7 +311,7 @@ class DocumentRepository{
             `nipro` bigint(20) NOT NULL,
             `patient_id` bigint(20) DEFAULT NULL,
             `dossier_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-            `site` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+            `site` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `venue` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `patient_age` int(11) DEFAULT NULL,
@@ -314,12 +322,17 @@ class DocumentRepository{
             `revision` int(11) DEFAULT '1',
             `extension` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `operateur` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+            `provisoire` tinyint(4) DEFAULT NULL,
+            `categorie` int(11) DEFAULT NULL,
+            `service` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
             `deleted` tinyint(4) DEFAULT '0',
-            PRIMARY KEY (`nipro`,`dossier_id`),
-            KEY `INDEX1` (`nipro`,`dossier_id`,`date_creation`,`patient_id`,`type`)
+            PRIMARY KEY (`nipro`,`dossier_id`,`site`),
+            KEY `INDEX1` (`nipro`,`dossier_id`,`date_creation`,`patient_id`,`type`,`deleted`),
+            KEY `INDEX_SITE` (`site`),
+            KEY `INDEX_NIPRO` (`nipro`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;
     }

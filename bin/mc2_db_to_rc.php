@@ -90,7 +90,7 @@ $options = getopt("", $longopts);
 $now = new DateTime();
 
 $logger = LoggerFactory::create_logger("mc2_db_to_csv", __DIR__.'/../log');
-$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_middlecare.yml"));
+$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
 $config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
 $config_redcap = Yaml::parse(file_get_contents(__DIR__."/../config/config_redcap.yml"));
 $input_folder = __DIR__."/../data";

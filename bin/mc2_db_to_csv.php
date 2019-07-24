@@ -7,6 +7,7 @@
  * ================================================================================================================
  * HISTORY
  * > php .\mc2_db_to_csv.php --site sls --dsp DSP22 --deb 20180101 --fin 20190715 --type_doc 'CRH hémato-oncologie CART' --excel --period P2Y
+ * > php .\mc2_db_to_csv.php --site sls --dsp DSP96 --deb 20180101 --fin 20190715 --excel --period P2Y
  */
 require_once __DIR__.'/../vendor/autoload.php';
 use SBIM\Core\Helper\DateHelper;
@@ -44,7 +45,7 @@ if ($argc < 2) {
     - dsp : identifiant du DSP (ex: DSP2)
     - deb (optionnal) : date de début au format YYYYMMDD
     - fin (optionnal) : date de fin au format YYYYMMDD
-    - items (optionnal) : liste des items à récupérer ex : 'VAR1290 VAR1312 VAR1333'
+    - items (optionnal) : liste des items à récupérer ex : 'VAR1 VAR2 DEB_HOSP'
     - type_doc (optionnal) : type de document à récupérer ex : 'Cr HDJ CMS'
     - period (optionnal) : période des fichiers CSV ex: 1 fichier CSV par mois = P1M, 1 fichier CSV pour 2 ans : P2Y etc
     - excel (optionnal): CSV excel friendly (BOM,UTF8 etc)
@@ -57,7 +58,7 @@ if ($argc < 2) {
     > php mc2_db_to_csv.php --dict --site sls --dsp DSP2
     
     - Extraire le dictionnaire d'un DSP avec filtrage des variables/items depuis la base locale vers un fichier CSV :
-    > php mc2_db_to_csv.php --dict --site sls --dsp DSP2 --items 'VAR1290 VAR1312 VAR1333 VAR1358 VAR1370 VAR1418 VAR1419 VAR1426 VAR1481 VAR1496 VAR1497 VAR1498 VAR1501 VAR1504 VAR1505 VAR1508 VAR1509 VAR1515 VAR1516 VAR1525 VAR1711 VAR1780 VAR1809 VAR1817 VAR1940 VAR1941 VAR1989 VAR1990 VAR1992 VAR2124 VAR2128 VAR2140'
+    > php mc2_db_to_csv.php --dict --site sls --dsp DSP2 --items 'VAR1 VAR2 DEB_HOSP'
     
     - Extraire les données d'un DSP pour une période donnée depuis la base locale vers un ou plusieurs fichier(s) CSV, avec filtrage sur le type de document:
     > php mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --type_doc 'Cr HDJ CMS' --period P1M
@@ -65,16 +66,16 @@ if ($argc < 2) {
     exit(1);
 }
 
-$longopts  = array("dict", "dsp:", "deb:", "fin:", "items:", "page:", "excel","type_doc:","site:","period:");
+$longopts  = array("dict","dsp:","deb:","fin:","items:","page:","excel","type_doc:","site:","period:");
 $options = getopt("", $longopts);
 
 $now = new DateTime();
 
 $logger = LoggerFactory::create_logger("mc2_db_to_csv", __DIR__.'/../log');
-$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_middlecare.yml"));
+$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
 $config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
-$site = isset($options["site"]) ? $options["site"] : 'sls';
-$period = isset($options["period"]) ? $options["period"] : 'P1M';//1mois = P1M, 2 mois = P2M, 60 jours =  P60D
+$site = isset($options['site']) ? $options['site'] : 'sls';
+$period = isset($options['period']) ? $options['period'] : 'P1M';//1mois = P1M, 2 mois = P2M, 60 jours =  P60D
 
 $mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
 $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);

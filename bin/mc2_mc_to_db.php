@@ -87,7 +87,7 @@ $options = getopt("", $longopts);
 $now = new DateTime();
 
 $logger = LoggerFactory::create_logger("mc2_mc_to_db", __DIR__.'/../log');
-$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_middlecare.yml"));
+$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
 $config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
 $site = isset($options["site"]) ? $options["site"] : 'sls';
 

@@ -228,11 +228,12 @@ class MCRepository{
             $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP";
 
         // FILE_URL : CS.INTNIP || '/' || CS.CDPROD || '/' || CS.INTNIPRO || '_' || CS.REVISION || CS.EXTENSION AS FILE_URL,
+        // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
         $query_get_dsp = 
             "SELECT IP.NIPRO, INCLETB.ID_PATIENT_ETB AS IPP, IP.NIP, INCL.NOM, INCL.PNOM AS PRENOM, to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
             INCL.SEXE, IP.AGE_DTPRO AS AGE, IP.POIDS, IP.TAILLE, IP.TP_EXM AS TYPE_EXAM, IP.VENUE, 
             to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, IP.OPER,
-            CS.REVISION, CS.EXTENSION
+            CS.REVISION, CS.EXTENSION,CS.CATEG,CS.CR_PROVISOIRE, IP.SERVICE
             {$query_items_select}
             FROM MIDDLECARE.INCLUSION INCL
             INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP
@@ -249,6 +250,7 @@ class MCRepository{
     }
     
     /**
+     * YAGNI!
      * Retourne les données d'un DSP pour une liste d'IPP.
      * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
      * @param string[] $ipps liste d'IPP
@@ -273,7 +275,7 @@ class MCRepository{
             "SELECT IP.NIPRO, INCLETB.ID_PATIENT_ETB AS IPP, IP.NIP, INCL.NOM, INCL.PNOM AS PRENOM, to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
             INCL.SEXE, IP.AGE_DTPRO AS AGE, IP.POIDS, IP.TAILLE, IP.TP_EXM AS TYPE_EXAM, IP.VENUE, 
             to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, IP.OPER,
-            CS.REVISION, CS.EXTENSION
+            CS.REVISION, CS.EXTENSION, CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
             {$query_items_select}
             FROM MIDDLECARE.INCLUSION INCL
             INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP

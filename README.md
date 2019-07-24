@@ -74,16 +74,33 @@ Extraction MiddleCare vers base de données MySQL
 
 ```bash
 # aide / man
-php bin/mc2_mc_to_db.php
+> php bin/mc2_mc_to_db.php
 
-# extraire la liste des DSP existants
-php bin/mc2_mc_to_db.php --site sls --dict
+NAME 
+mc2_mc_to_db.php - Extraction depuis MiddleCare vers DB locale (mc2)
 
-# extraire le dictionnaire d'un DSP
-php bin/mc2_mc_to_db.php --site sls --dict --dsp DSP2
+SYNOPSIS
+php mc2_mc_to_db.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin>
 
-# extraire l'ensemble des données d'un DSP pour une période donnée
-php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101
+DESCRIPTION
+Extraction des données de MiddleCare vers base de données locale mc2 (cf. config_db_middlecare.yml et config_db_mc2.yml)
+
+OPTIONS
+- dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
+- site : sls | lrb
+- dsp : identifiant du DSP (ex: DSP2)
+- deb (optionnal) : date de début au format YYYYMMDD
+- fin (optionnal) : date de fin au format YYYYMMDD
+
+EXAMPLES
+- Extraire la liste des DSP de MiddleCare et les enregistrer dans la base locale :
+> php mc2_mc_to_db.php --dict --site lrb 
+
+- Extraire le dictionnaire d'un DSP de MiddleCare donné et les enregistrer dans la base locale :
+> php mc2_mc_to_db.php --dict --site sls --dsp DSP2
+
+- Extraire les données d'un DSP MiddleCare pour une période donnée et les enregistrer dans la base locale :
+> php mc2_mc_to_db.php --site sls --dsp DSP2 --deb 20180101 --fin 20180201
 ```
 
 Extraction base de données MySQL vers fichier CSV
@@ -91,22 +108,40 @@ Extraction base de données MySQL vers fichier CSV
 
 ```bash
 # aide / man
-php bin/mc2_db_to_csv.php
+> php bin/mc2_db_to_csv.php
 
-# extraire la liste des DSP existants
-php bin/mc2_db_to_csv.php --site sls --dict
+NAME 
+mc2_db_to_csv.php - Extraction depuis DB locale (mc2) vers fichier(s) CSV
 
-# extraire le dictionnaire d'un DSP vers fichier CSV 'Excel friendly'
-php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP2 --excel
+SYNOPSIS
+php mc2_db_to_csv.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--type_doc <doc_type>]
 
-# extraire le dictionnaire d'un DSP, avec filtrage des variables
-php bin/mc2_db_to_csv.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
+DESCRIPTION
+Extraction des données de MiddleCare (cf. config_db_middlecare.yml) vers base de données locale mc2 (cf. config_db_mc2.yml)
 
-# extraire l'ensemble des données d'un DSP pour une période donnée, avec filtre sur le type de document
-php bin/mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --type_doc 'Cs sénologie de surveillance'
+OPTIONS
+- dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
+- site : sls | lrb
+- dsp : identifiant du DSP (ex: DSP2)
+- deb (optionnal) : date de début au format YYYYMMDD
+- fin (optionnal) : date de fin au format YYYYMMDD
+- items (optionnal) : liste des items à récupérer ex : 'VAR1290 VAR1312 VAR1333'
+- type_doc (optionnal) : type de document à récupérer ex : 'Cr HDJ CMS'
+- period (optionnal) : période des fichiers CSV ex: 1 fichier CSV par mois = P1M, 1 fichier CSV pour 2 ans : P2Y etc
+- excel (optionnal): CSV excel friendly (BOM,UTF8 etc)
 
-# extraire l'ensemble des données d'un DSP pour une période donnée, avec filtrage des variables et vers fichier 'Excel friendly'
-php bin/mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --excel
+EXAMPLES
+- Extraire la liste des DSP depuis la base locale vers un fichier CSV :
+> php mc2_db_to_csv.php --dict --site lrb 
+
+- Extraire le dictionnaire d'un DSP donné depuis la base locale vers un fichier CSV excel friendly:
+> php mc2_db_to_csv.php --dict --site sls --dsp DSP2 --excel
+
+- Extraire le dictionnaire d'un DSP avec filtrage des variables/items depuis la base locale vers un fichier CSV :
+> php mc2_db_to_csv.php --dict --site sls --dsp DSP2 --items 'VAR1 VAR2 DEB_HOSP'
+
+- Extraire les données d'un DSP pour une période donnée depuis la base locale vers un ou plusieurs fichier(s) CSV, avec filtrage sur le type de document:
+> php mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --type_doc 'Cr HDJ CMS' --period P1M
 ```
 
 Extraction base de données MySQL vers projet RedCap
@@ -114,39 +149,76 @@ Extraction base de données MySQL vers projet RedCap
 
 ```bash
 # aide / man
-php bin/mc2_db_to_rc.php
+> php bin/mc2_db_to_rc.php
 
-# extraire le dictionnaire d'un DSP vers fichier CSV RedCap (Note : pour ouverture avec Excel = --excel)
-php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP2 
+NAME 
+mc2_db_to_rc.php - Extraction depuis DB locale (mc2) vers projet RedCAP
 
-# extraire le dictionnaire d'un DSP, avec filtrage des variables
-php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
+SYNOPSIS
+php mc2_db_to_rc.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--long] [--inst <custom_intrument_name>] [--inst_only] [--bydoctype] [--noapicall]
 
-# extraire les données d'un DSP pour une période donnée, avec filtrage des variables et vers projet RedCap (longitudinal) existant (API Key du projet dans config_redcap.yml )
-php bin/mc2_db_to_rc.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --long --inst_only --inst "Indicateur CarT" --items "VAR1 VAR2 DEB_HOSP"
+DESCRIPTION
+Extraction de la base de données locale mc2 (cf. config_db_mc2.yml) vers un projet RedCap via l'API RedCap
+
+OPTIONS
+- dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
+- site : sls | lrb
+- dsp : identifiant du DSP (ex: DSP2)
+- deb (optionnal) : date de début au format YYYYMMDD
+- fin (optionnal) : date de fin au format YYYYMMDD
+- items (optionnal) : liste des items à récupérer ex : 'VAR1290 VAR1312 VAR1333'
+- long (optionnal) : a destination d'un projet redcap longitudinal
+- inst (optionnal) : nom de l'instrument custom ex: 'Indicateurs Sénologie'
+- inst_only (optionnal) : ne prendre que les données partagé et l'instrument custom (ne pas prendre tous les autres items)
+- bydoctype (optionnal) : un instrument par type de document
+- noapicall (optionnal) : n'appelle pas l'API après avoir généré les fichiers CSV
+
+EXAMPLES
+- Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal :
+> php mc2_db_to_rc.php --dict --site sls --dsp DSP2 --long
+
+- Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal, avec filtrage des variables/items :
+> php mc2_db_to_rc.php --dict --site sls --dsp DSP96 --long --inst 'Document CarT' --inst_only --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'
+
+- Extraire les données d'un DSP pour une période donnée depuis la base locale vers fichier(s) CSV RedCap et les envoyer vers l'API RedCap(cf. config_redcap.yml):
+> php mc2_db_to_rc.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --long --inst_only --inst 'Indicateurs Séno' --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2 VAR83 VAR84 ...'
 ```
 
 Extraction MiddleCare vers fichier CSV 
 -------------------------------------------------------------------------------
 
+**Note importante : trop gourmand pour middlecare (pas de chunk), ne pas utiliser ce script pour générer autre chose que des dictionnaires**
+
 ```bash
-# aide / man
-php bin/mc2_mc_to_csv.php
+mc2_mc_to_csv.php - YAGNI! Extraction depuis MiddleCare vers fichier(s) CSV
 
-# extraire la liste des DSP existants
-php bin/mc2_mc_to_csv.php --site sls --dict
+    SYNOPSIS
+    php mc2_mc_to_csv.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--type_doc <doc_type>]
 
-# extraire le dictionnaire d'un DSP vers fichier CSV 'Excel friendly'
-php bin/mc2_mc_to_csv.php --site sls --dict --dsp DSP2 --excel
-
-# extraire le dictionnaire d'un DSP, avec filtrage des variables
-php bin/mc2_mc_to_csv.php --site sls --dict --dsp DSP2 --items "VAR1 VAR2 DEB_HOSP"
-
-# extraire les données d'un DSP pour une période donnée
-php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101
-
-# extraire les données d'un DSP pour une période donnée, avec filtrage des variables et vers fichier 'Excel friendly'
-php bin/mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --excel
+    DESCRIPTION
+    Extraction des données de MiddleCare (cf. config_db_middlecare.yml) vers base de données locale mc2 (cf. config_db_mc2.yml)
+    
+    OPTIONS
+    - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
+    - site : sls | lrb
+    - dsp : identifiant du DSP (ex: DSP2)
+    - deb (optionnal) : date de début au format YYYYMMDD
+    - fin (optionnal) : date de fin au format YYYYMMDD
+    - items (optionnal) : liste des items à récupérer ex : 'VAR1290 VAR1312 VAR1333'
+    - excel (optionnal): CSV excel friendly (BOM,UTF8 etc)
+    
+    EXAMPLES
+    - Extraire la liste des DSP depuis la base locale vers un fichier CSV :
+    > php mc2_mc_to_csv.php --dict --site lrb 
+    
+    - Extraire le dictionnaire d'un DSP donné depuis la base locale vers un fichier CSV :
+    > php mc2_mc_to_csv.php --dict --site sls --dsp DSP2
+    
+    - Extraire le dictionnaire d'un DSP avec filtrage des variables/items depuis la base locale vers un fichier CSV :
+    > php mc2_mc_to_csv.php --dict --site sls --dsp DSP2 --items 'VAR1290 VAR1312 VAR1333 VAR1358 VAR1370 VAR1418 VAR1419 VAR1426 VAR1481 VAR1496 VAR1497 VAR1498 VAR1501 VAR1504 VAR1505 VAR1508 VAR1509 VAR1515 VAR1516 VAR1525 VAR1711 VAR1780 VAR1809 VAR1817 VAR1940 VAR1941 VAR1989 VAR1990 VAR1992 VAR2124 VAR2128 VAR2140'
+    
+    - Extraire les données d'un DSP pour une période donnée depuis la base locale vers un ou plusieurs fichier(s) CSV
+    > php mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 
 ```
 
 Exemple complet - Extraction des données d'un DSP MiddleCare vers projet RedCap
@@ -262,7 +334,7 @@ README.md
 Annexe - schéma bases de données MySQL
 ===============================================================================
 
-![schéma bases de données MySQL](docs/schemas/schema_mysql_2019-06-05.md.png)
+![schéma bases de données MySQL](docs/schemas/schema_mysql_2019-07-24.md.png)
 
 Annexe - formats CSV
 ===============================================================================

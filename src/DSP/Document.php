@@ -18,6 +18,10 @@ class Document{
     public $operateur;
     public $revision;
     public $extension;
+    // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
+    public $provisoire;
+    public $categorie;
+    public $service;
 
     public $base_url;
 
@@ -47,6 +51,10 @@ class Document{
             $this->operateur = $data['operateur'];
             $this->revision = $data['revision'];
             $this->extension = $data['extension'];
+            // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
+            $this->provisoire = $data['provisoire'];
+            $this->categorie = $data['categorie'];
+            $this->service = $data['service'];
             
             $this->created = DateTime::createFromFormat(DateHelper::MYSQL_FORMAT,$data['created']);
             $this->modified = DateTime::createFromFormat(DateHelper::MYSQL_FORMAT,$data['modified']);
@@ -73,6 +81,10 @@ class Document{
             $document->operateur = $mc_data['OPER'];
             $document->revision = $mc_data['REVISION'];
             $document->extension = $mc_data['EXTENSION'];
+            // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
+            $document->provisoire = $mc_data['CR_PROVISOIRE'];
+            $document->categorie = $mc_data['CATEG'];
+            $document->service = $mc_data['SERVICE'];
         }
         return $document;
     }

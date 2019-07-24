@@ -21,16 +21,16 @@ class ReflectionHelper{
                     $table_name = $matches[1];
                     $in_table = true;
                     $definition .= "[$table_name|";
-                    continue;
+                    break;
                 // END TABLE SCHEMA
                 case preg_match("/\) ENGINE=/", $line, $matches):
                     $in_table = false;
                     $definition .= "],";
-                    continue;
+                    break;
                 case !$in_table : 
                 // INDEX
                 case preg_match("/KEY `([a-zA-Z0-9_]+)` ([a-zA-Z0-9_\(\)]+)/", $line, $matches):
-                    continue;
+                    break;
                 // FIELD
                 case preg_match("/`([a-zA-Z0-9_]+)` ([a-zA-Z0-9_\(\)]+)/", $line, $matches):
                     $field_name = $matches[1];

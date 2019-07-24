@@ -43,7 +43,7 @@ $config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config
 $config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
 $site = isset($options["site"]) ? $options["site"] : 'sls';
 
-$mc_repo = new MCRepository($config_db_middlecare,$logger,$site);
+$mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
 $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
 $document_repo = new DocumentRepository($config_db_dsp,$logger,$site);
 $patient_repo = new PatientRepository($config_db_dsp,$logger);

@@ -107,7 +107,7 @@ final class MCExtractManager{
 	 * @return string[] nom de(s) CSV généré(s)
 	 */
 	public function export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null, $interval = null){
-		$this->logger->addInfo("-------- Exporting SITE=".$this->site." DSP_ID={$dsp_id} data from ".$this->getSourceName()." from ".$date_debut->format('Y-m-d')." to ".$date_fin->format('Y-m-d')."to CSV file", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'item_names' => $item_names));
+		$this->logger->addInfo("-------- Exporting SITE=".$this->site." DSP_ID={$dsp_id} data from ".$this->getSourceName()." from ".$date_debut->format('Y-m-d')." to ".$date_fin->format('Y-m-d')." to CSV file", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'item_names' => $item_names, 'interval' => $interval));
 		$file_names = array();
 		$interval = $interval === null ? "P1M" : $interval;
 		$interval_max = new DateInterval($interval);//1mois = P1M, 2 mois = P2M, 60 jours =  P60D
@@ -134,7 +134,6 @@ final class MCExtractManager{
 			$data = $this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items);
 		}else{
 			$items = $this->dossier_repository->findItemByDossierId($dsp_id,$item_names);
-			//$this->logger->addInfo("findDocumentWithItemValues");
 			$documents = $this->document_repository->findDocumentWithItemValues($dsp_id,$date_debut,$date_fin,$item_names,$page_name,null,$type_doc);
 			$data = array();
 			foreach ($documents as $document){
@@ -364,7 +363,6 @@ final class MCExtractManager{
 			$file_name = $this->csv_writer->save(new CSVFile($prefix, $rc_data));
 			$file_names[] = $file_name;
 			$this->logger->addInfo("Exported SITE=".$this->site." DSP_ID={$dsp_id} RC data from local DB  to {$file_name}, chunck {$chunk_i}-".($chunk_i + $CHUNK_COUNT), array('row_count' => count($rc_data)));
-			// break;
 		}
 		return $file_names;
 	}

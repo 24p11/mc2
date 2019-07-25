@@ -49,6 +49,7 @@ if ($argc < 2) {
     - type_doc (optionnal) : type de document à récupérer ex : 'Cr HDJ CMS'
     - period (optionnal) : période des fichiers CSV ex: 1 fichier CSV par mois = P1M, 1 fichier CSV pour 2 ans : P2Y etc
     - excel (optionnal): CSV excel friendly (BOM,UTF8 etc)
+    - nohtml : supprimer les balises HTML dans les valeurs des items
     
     EXAMPLES
     - Extraire la liste des DSP depuis la base locale vers un fichier CSV :
@@ -66,7 +67,7 @@ if ($argc < 2) {
     exit(1);
 }
 
-$longopts  = array("dict","dsp:","deb:","fin:","items:","page:","excel","type_doc:","site:","period:");
+$longopts  = array("dict","dsp:","deb:","fin:","items:","page:","excel","type_doc:","site:","period:","nohtml");
 $options = getopt("", $longopts);
 
 $now = new DateTime();
@@ -82,7 +83,8 @@ $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
 $document_repo = new DocumentRepository($config_db_dsp,$logger,$site);
 $patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = isset($options['excel']);
-$csv_options = new CSVOption($excel_friendly);
+$nohtml = isset($options['nohtml']);
+$csv_options = new CSVOption($excel_friendly,$nohtml);
 $csv_writer = new CSVWriter($csv_options,$logger);
 $mc_extracter = new MCExtractManager(MCExtractManager::SRC_LOCAL_DB,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo, $csv_writer, $logger);
 

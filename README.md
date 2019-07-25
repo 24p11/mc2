@@ -309,7 +309,6 @@ TODO
 ===============================================================================
 
 - refactoring : tables OMOP friendly
-- mc2_db_to_rc : supprimer les balises HTML des textes libres
 - doc : Ajouter CSV anonymisés d'exemple à l'annexe Format CSV
 
 

@@ -64,6 +64,10 @@ class CSVWriter{
                 foreach($line as $key => $val){
                     $clean_string = str_replace("\r\n"," ",$val);
                     $clean_string = str_replace("\r"," ",$clean_string);
+                    if($this->options->remove_html === true){
+                        // $clean_string = htmlentities($clean_string, ENT_QUOTES, 'UTF-8');
+                        $clean_string = strip_tags($clean_string);
+                    }
                     $clean_line[$key] = $clean_string;
                 }
                 @fputcsv(

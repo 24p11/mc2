@@ -110,6 +110,9 @@ class Document{
         $result['OPER'] = $this->operateur;
         $result['REVISION'] = $this->revision;
         $result['EXTENSION'] = $this->extension;
+        $result['CR_PROVISOIRE'] = $this->provisoire;
+        $result['CATEG'] = $this->categorie;
+        $result['SERVICE'] = $this->service;
 
         foreach($items as $item){
             $value = "";

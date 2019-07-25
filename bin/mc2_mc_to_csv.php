@@ -72,6 +72,7 @@ if ($argc < 2) {
     - fin (optionnal) : date de fin au format YYYYMMDD
     - items (optionnal) : liste des items à récupérer ex : 'VAR1290 VAR1312 VAR1333'
     - excel (optionnal): CSV excel friendly (BOM,UTF8 etc)
+    - nohtml : supprimer les balises HTML dans les valeurs des items
     
     EXAMPLES
     - Extraire la liste des DSP depuis la base locale vers un fichier CSV :
@@ -89,7 +90,7 @@ if ($argc < 2) {
     exit(1);
 }
 
-$longopts = array("dict", "dsp:", "deb:", "fin:", "items:", "page:", "excel","site:");
+$longopts = array("dict", "dsp:", "deb:", "fin:", "items:", "page:", "excel","site:","nohtml");
 $options = getopt("", $longopts);
 
 $now = new DateTime();
@@ -104,6 +105,7 @@ $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
 $document_repo = new DocumentRepository($config_db_dsp,$logger,$site);
 $patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = isset($options['excel']);
+$nohtml = isset($options['nohtml']);
 $csv_options = new CSVOption($excel_friendly);
 $csv_writer = new CSVWriter($csv_options,$logger);
 $mc_extracter = new MCExtractManager(MCExtractManager::SRC_MIDDLECARE,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo, $csv_writer, $logger);

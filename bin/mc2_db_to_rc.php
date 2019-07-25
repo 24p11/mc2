@@ -70,6 +70,7 @@ if ($argc < 2) {
     - inst_only (optionnal) : ne prendre que les données partagé et l'instrument custom (ne pas prendre tous les autres items)
     - bydoctype (optionnal) : un instrument par type de document
     - noapicall (optionnal) : n'appelle pas l'API après avoir généré les fichiers CSV
+    - nohtml : supprimer les balises HTML dans les valeurs des items
 
     EXAMPLES
     - Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal :
@@ -84,7 +85,7 @@ if ($argc < 2) {
     exit(1);
 }
 
-$longopts  = array("dict", "dsp:", "deb:", "fin:", "items:", "page:", "excel", "inst:","inst_only","long","noapicall","site:","bydoctype");
+$longopts  = array("dict", "dsp:", "deb:", "fin:", "items:", "page:", "excel", "inst:","inst_only","long","noapicall","site:","bydoctype","nohtml");
 $options = getopt("", $longopts);
 
 $now = new DateTime();
@@ -101,6 +102,7 @@ $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
 $document_repo = new DocumentRepository($config_db_dsp,$logger,$site);
 $patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = isset($options['excel']);
+$nohtml = isset($options['nohtml']);
 $csv_options = new CSVOption($excel_friendly);
 $csv_writer = new CSVWriter($csv_options,$logger);
 $mc_extracter = new MCExtractManager(MCExtractManager::SRC_LOCAL_DB,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo, $csv_writer, $logger);

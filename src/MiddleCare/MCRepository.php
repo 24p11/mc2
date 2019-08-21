@@ -42,12 +42,14 @@ class MCRepository{
     }
 
     /**
-     * Retourne les DSP existants dans MiddleCare.
+     * Retourne les DSP (DSP, DDS et DSC) existants dans MiddleCare.
      * 
-     * @return array [DSP_ID, DSP_NOM, DSP_DESCRIPTION] => NEW [DOSSIER_ID, NOM, LIBELLE]
+     * @return array [DOSSIER_ID, NOM, LIBELLE]
      */
     public function getAllDSP(){
-        $query = "SELECT CD_DOSSIER DOSSIER_ID, NOM NOM, DESCRIPTION LIBELLE, lower(SUBSTR(CD_HOP,1,3)) SITE, CD_UF UHS FROM middlecare.DOSSIER WHERE CD_DOSSIER LIKE 'DSP%' ORDER BY CD_DOSSIER";
+        $query = "SELECT CD_DOSSIER DOSSIER_ID, NOM NOM, DESCRIPTION LIBELLE, lower(SUBSTR(CD_HOP,1,3)) SITE, CD_UF UHS 
+            FROM middlecare.DOSSIER 
+            WHERE CD_DOSSIER LIKE 'D%' ORDER BY CD_DOSSIER";
         return $this->executeQuery($query);
     }
     
@@ -57,7 +59,12 @@ class MCRepository{
      * @return array [SITE, DOSSIER_ID,DOCUMENT_TYPE, PAGE_LIBELLE, PAGE_CODE, PAGE_ORDRE]
      */
     public function getDSPPages($dsp_id){
-        $query = "SELECT '".$this->site."' SITE, upper('{$dsp_id}') DOSSIER_ID, PROCEDURE DOCUMENT_TYPE, CHAPITRE PAGE_LIBELLE, CD_PGE PAGE_CODE, ORDRE_LISTE PAGE_ORDRE
+        $query = "SELECT '".$this->site."' SITE, 
+            upper('{$dsp_id}') DOSSIER_ID, 
+            PROCEDURE DOCUMENT_TYPE, 
+            CHAPITRE PAGE_LIBELLE, 
+            CD_PGE PAGE_CODE, 
+            ORDRE_LISTE PAGE_ORDRE
             FROM {$dsp_id}.CHAPITRE
             ORDER BY DOCUMENT_TYPE, PAGE_ORDRE";
         return $this->executeQuery($query);
@@ -76,24 +83,23 @@ class MCRepository{
             ? "" : "AND all_col.column_name in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
         $query_page = ($page_name === null)
             ? "" : " AND all_col.table_name = '".strtoupper($page_name)."'";
-    
         $query = "SELECT DISTINCT '".$this->site."' SITE, all_col.owner DOSSIER_ID,
-                upper(pag.NM_PGE) PAGE_NOM, 
-                pag.LB_PGE PAGE_LIBELLE,
-                blc.NO_BLC BLOC_NO,
-                blc.NM_BLC BLOC_LIBELLE,
-                blc.LIGNE LIGNE,
-                all_col.column_name ITEM_ID,
-                all_col.data_type TYPE,
-                blc.TP_OBJ MCTYPE,
-                obj.lb_obj LIBELLE, 
-                blc.LB_OBJ LIBELLE_BLOC,
-                blc.LB_SECONDAIRE LIBELLE_SECONDAIRE,
-                upper(blc.DETAIL) DETAIL, 
-                blc.TYP_CRTL TYPE_CONTROLE,
-                blc.FORMULE FORMULE,
-                blc.OPTIONS OPTIONS,
-                blc.LD_NOM LIST_NOM
+            upper(pag.NM_PGE) PAGE_NOM, 
+            pag.LB_PGE PAGE_LIBELLE,
+            blc.NO_BLC BLOC_NO,
+            blc.NM_BLC BLOC_LIBELLE,
+            blc.LIGNE LIGNE,
+            all_col.column_name ITEM_ID,
+            all_col.data_type TYPE,
+            blc.TP_OBJ MCTYPE,
+            obj.lb_obj LIBELLE, 
+            blc.LB_OBJ LIBELLE_BLOC,
+            blc.LB_SECONDAIRE LIBELLE_SECONDAIRE,
+            upper(blc.DETAIL) DETAIL, 
+            blc.TYP_CRTL TYPE_CONTROLE,
+            blc.FORMULE FORMULE,
+            blc.OPTIONS OPTIONS,
+            blc.LD_NOM LIST_NOM
             FROM all_tab_columns all_col, {$dsp_id}.NOM_OBJET obj, {$dsp_id}.BLOC blc, {$dsp_id}.PAGE pag
             WHERE all_col.owner = '{$dsp_id}'
             AND upper(trim(all_col.COLUMN_NAME)) = upper(trim(blc.NM_OBJ))
@@ -106,7 +112,7 @@ class MCRepository{
         
         $item_infos = $this->executeQuery($query);
 
-        // pour chaque item associée à une fiche de détail, ajouter les items de la fiche aux autres items
+        // pour chaque item associé à une fiche de détail, ajouter les items de la fiche aux autres items
         $all_details = array_unique(array_column($item_infos, 'DETAIL'));
         $fiches = array();
         foreach ($all_details as $value) {
@@ -133,12 +139,12 @@ class MCRepository{
             blc.FORMULE FORMULE,
             blc.OPTIONS OPTIONS,
             blc.LD_NOMD LIST_NOM
-        FROM all_tab_columns all_col, {$dsp_id}.DETAIL blc
-        WHERE all_col.owner = '{$dsp_id}'
-        AND upper(trim(all_col.COLUMN_NAME)) = upper(trim(blc.NM_OBJD))
-        {$query_items}
-        {$query_fiches}
-        ORDER BY DOSSIER_ID, PAGE_NOM, BLOC_NO, LIGNE";
+            FROM all_tab_columns all_col, {$dsp_id}.DETAIL blc
+            WHERE all_col.owner = '{$dsp_id}'
+            AND upper(trim(all_col.COLUMN_NAME)) = upper(trim(blc.NM_OBJD))
+            {$query_items}
+            {$query_fiches}
+            ORDER BY DOSSIER_ID, PAGE_NOM, BLOC_NO, LIGNE";
 
         $item_infos_fiche = $this->executeQuery($query_fiche_item);
         $item_infos = array_merge($item_infos, $item_infos_fiche);
@@ -169,7 +175,11 @@ class MCRepository{
         if(mb_substr($liste_name, 0, 3 ) !== "DSP")
             return [ 'description' => $liste_name, 'values' => array() ];
 
-        $query = "SELECT NM_LD LISTE_NOM, DESCRIPTION LISTE_DESCRIPTION, LB_ITM LISTE_VAL, NO_ITM LISTE_VAL_INDEX, DEFAUT LISTE_VAL_IS_DEFAULT
+        $query = "SELECT NM_LD LISTE_NOM, 
+            DESCRIPTION LISTE_DESCRIPTION, 
+            LB_ITM LISTE_VAL, 
+            NO_ITM LISTE_VAL_INDEX, 
+            DEFAUT LISTE_VAL_IS_DEFAULT
             FROM {$dsp_id}.LISTE
             WHERE NM_LD = '{$liste_name}'
             ORDER BY LISTE_VAL_INDEX";
@@ -214,7 +224,7 @@ class MCRepository{
      * @param \DateTime $date_fin
      * @param string[] $item_names (option)
      * @param string $page_name (option)
-     * @return array
+     * @return array [NIPRO,IPP,NIP,NOM,PRENOM,DATNAI,SEXE,AGE,POIDS,TAILLE,TYPE_EXAM,VENUE,DATE_EXAM,DATE_MAJ,OPER,REVISION,EXTENSION,CATEG,CR_PROVISOIRE,SERVICE,...ITEMS DU DSP...]
      */
     public function getDSPData($dsp_id, $date_debut, $date_fin, array $items){    
         $every_page = array_unique(array_column($items, 'PAGE_NOM'));
@@ -227,13 +237,26 @@ class MCRepository{
         foreach($every_page as $p_name)
             $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP";
 
-        // FILE_URL : CS.INTNIP || '/' || CS.CDPROD || '/' || CS.INTNIPRO || '_' || CS.REVISION || CS.EXTENSION AS FILE_URL,
-        // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
-        $query_get_dsp = 
-            "SELECT IP.NIPRO, INCLETB.ID_PATIENT_ETB AS IPP, IP.NIP, INCL.NOM, INCL.PNOM AS PRENOM, to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
-            INCL.SEXE, IP.AGE_DTPRO AS AGE, IP.POIDS, IP.TAILLE, IP.TP_EXM AS TYPE_EXAM, IP.VENUE, 
-            to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, IP.OPER,
-            CS.REVISION, CS.EXTENSION,CS.CATEG,CS.CR_PROVISOIRE, IP.SERVICE
+        $query_get_dsp = "SELECT IP.NIPRO, 
+            INCLETB.ID_PATIENT_ETB AS IPP, 
+            IP.NIP, 
+            INCL.NOM, 
+            INCL.PNOM AS PRENOM, 
+            to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
+            INCL.SEXE, 
+            IP.AGE_DTPRO AS AGE, 
+            IP.POIDS, 
+            IP.TAILLE, 
+            IP.TP_EXM AS TYPE_EXAM, 
+            IP.VENUE, 
+            to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, 
+            to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, 
+            IP.OPER,
+            CS.REVISION, 
+            CS.EXTENSION, 
+            CS.CATEG, 
+            CS.CR_PROVISOIRE, 
+            IP.SERVICE
             {$query_items_select}
             FROM MIDDLECARE.INCLUSION INCL
             INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP
@@ -243,9 +266,10 @@ class MCRepository{
             WHERE IP.DT_PRO >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY')
             AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')
             ORDER BY IP.NIP";
-        $this->logger->addDebug("query: getDSPData", array('query' => $query_get_dsp));
+
+        $this->logger->addDebug("query_get_dsp", array('query' => $query_get_dsp));
         $result = $this->executeQuery($query_get_dsp);
-        $this->logger->addInfo("Retrieved RC data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'row_count' => count($result)));
+        $this->logger->addInfo("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'row_count' => count($result)));
 		return $result;
     }
     
@@ -271,11 +295,26 @@ class MCRepository{
             $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP";
 
         $query_in_ipps = "'".join("','",$ipps)."'";
-        $query_get_data = 
-            "SELECT IP.NIPRO, INCLETB.ID_PATIENT_ETB AS IPP, IP.NIP, INCL.NOM, INCL.PNOM AS PRENOM, to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
-            INCL.SEXE, IP.AGE_DTPRO AS AGE, IP.POIDS, IP.TAILLE, IP.TP_EXM AS TYPE_EXAM, IP.VENUE, 
-            to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, IP.OPER,
-            CS.REVISION, CS.EXTENSION, CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
+        $query_get_data = "SELECT IP.NIPRO, 
+            INCLETB.ID_PATIENT_ETB AS IPP, 
+            IP.NIP, 
+            INCL.NOM, 
+            INCL.PNOM AS PRENOM, 
+            to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
+            INCL.SEXE, 
+            IP.AGE_DTPRO AS AGE, 
+            IP.POIDS, 
+            IP.TAILLE, 
+            IP.TP_EXM AS TYPE_EXAM, 
+            IP.VENUE, 
+            to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, 
+            to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, 
+            IP.OPER,
+            CS.REVISION, 
+            CS.EXTENSION, 
+            CS.CATEG, 
+            CS.CR_PROVISOIRE, 
+            IP.SERVICE
             {$query_items_select}
             FROM MIDDLECARE.INCLUSION INCL
             INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP
@@ -286,7 +325,7 @@ class MCRepository{
             ORDER BY INCLETB.ID_PATIENT_ETB, IP.DT_PRO";
 
         $result = array('dsp_id' => $dsp_id, 'items' => $items, 'data' => $this->executeQuery($query_get_data));
-        $this->logger->addInfo("Retrieved RC data of IPPs={$query_in_ipps} for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id,'IPPs' => $query_in_ipps, 'page_name' => $page_name, 'row_count' => count($result['data'])));
+        $this->logger->addInfo("Retrieved DSP data of IPPs={$query_in_ipps} for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id,'IPPs' => $query_in_ipps, 'page_name' => $page_name, 'row_count' => count($result['data'])));
 		return $result;
     }
 
@@ -312,10 +351,21 @@ class MCRepository{
         foreach($every_page as $p_name)
             $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP";
 
-        $query_get_dsp = 
-            "SELECT IP.NIPRO, INCLETB.ID_PATIENT_ETB AS IPP, IP.NIP, INCL.NOM, INCL.PNOM AS PRENOM, to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
-            INCL.SEXE, IP.AGE_DTPRO AS AGE, IP.POIDS, IP.TAILLE, IP.TP_EXM AS TYPE_EXAM, IP.VENUE, 
-            to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, IP.OPER
+        $query_get_dsp = "SELECT IP.NIPRO, 
+            INCLETB.ID_PATIENT_ETB AS IPP, 
+            IP.NIP, 
+            INCL.NOM, 
+            INCL.PNOM AS PRENOM, 
+            to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
+            INCL.SEXE, 
+            IP.AGE_DTPRO AS AGE, 
+            IP.POIDS, 
+            IP.TAILLE, 
+            IP.TP_EXM AS TYPE_EXAM, 
+            IP.VENUE, 
+            to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, 
+            to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, 
+            IP.OPER
             {$query_items_select}
             FROM MIDDLECARE.INCLUSION INCL
             INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP

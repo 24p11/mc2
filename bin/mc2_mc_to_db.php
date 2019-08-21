@@ -24,7 +24,10 @@
  * > php mc2_mc_to_db.php --site sls --dict --dsp DSP22
  * > php mc2_mc_to_db.php --site sls --dsp DSP22 --deb 20190101 --fin 20190201
  * - Suivi des Dossiers Car : T DSP96	CAR-T	Dossier suivi patients CAR-T
- * > php mc2_mc_to_db.php --site sls --dsp DSP22 --deb 20180101 --fin 2019060
+ * > php mc2_mc_to_db.php --site sls --dsp DSP22 --deb 20180101 --fin 20190601
+ * - AJA DCS40
+ * > php mc2_mc_to_db.php --site sls --dict --dsp DCS40
+ * > php mc2_mc_to_db.php --site sls --dsp DCS40 --deb 20180101 --fin 20190821
  * ---- Rea Med Toxico LRB (creation mi 2017)
  * > php mc2_mc_to_db.php --site lrb --dict --dsp DSP127
  * > php mc2_mc_to_db.php --site lrb --dsp DSP127 --deb 20100101 --fin 20190201
@@ -98,39 +101,28 @@ $patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = true;
 $csv_options = new CSVOption($excel_friendly);
 $csv_writer = new CSVWriter($csv_options,$logger);
-$mc_extracter = new MCExtractManager(MCExtractManager::SRC_MIDDLECARE,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo, $csv_writer, $logger);
+$mc_extracter = new MCExtractManager(MCExtractManager::SRC_MIDDLECARE,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo,$csv_writer, $logger);
 
 if(isset($options['dict'])){
-    // ----- DSP 
+    // ----- DSP List
     if(!isset($options['dsp'])){
-        $all_dsp = $mc_repo->getAllDSP();
-        foreach ($all_dsp as $key => $dsp_row)
-            $dossier_repo->upsertDossier(Dossier::createFromMCData($dsp_row));
-        $all_dossiers = $dossier_repo->findAllDossier();
+        $mc_extracter->import_all_dsp_metadata();
     }
-    // ----- DSP Items / Page
+    // ----- DSP Dictionnary (Items / Pages)
     else{
         $dsp_id = $options['dsp'];
-        // items
-        $all_dsp_item = $mc_repo->getDSPItems($dsp_id);
-        foreach ($all_dsp_item as $key => $dsp_item_row)
-            $dossier_repo->upsertItem(Item::createFromMCData($dsp_item_row));
-        $all_items = $dossier_repo->findItemByDossierId($dsp_id);
-        // pages
-        $all_dsp_page = $mc_repo->getDSPPages($dsp_id);
-        foreach ($all_dsp_page as $key => $dsp_page_row)
-            $dossier_repo->upsertPage(Page::createFromMCData($dsp_id,$dsp_page_row));
+        $mc_extracter->import_dsp_dictionnary($dsp_id);
     }
 }else{
-    // ----- Document / Item Value / Patient 
+    // ----- DSP Data (Document / Item Value / Patient)
     if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
         $dsp_id = $options['dsp'];
         $date_debut = new DateTime($options['deb']);
         $date_fin = new DateTime($options['fin']);
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $mc_extracter->export_mc_dsp_data_to_db($dsp_id, $date_debut, $date_fin,$item_names);
+        $mc_extracter->import_dsp_data($dsp_id, $date_debut, $date_fin,$item_names);
     }else{
         $logger->AddInfo("Parametres inconnus");
     }
 }
-$logger->addInfo("-------- Finished after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

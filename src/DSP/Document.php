@@ -18,7 +18,6 @@ class Document{
     public $operateur;
     public $revision;
     public $extension;
-    // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
     public $provisoire;
     public $categorie;
     public $service;
@@ -51,7 +50,6 @@ class Document{
             $this->operateur = $data['operateur'];
             $this->revision = $data['revision'];
             $this->extension = $data['extension'];
-            // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
             $this->provisoire = $data['provisoire'];
             $this->categorie = $data['categorie'];
             $this->service = $data['service'];
@@ -81,7 +79,6 @@ class Document{
             $document->operateur = $mc_data['OPER'];
             $document->revision = $mc_data['REVISION'];
             $document->extension = $mc_data['EXTENSION'];
-            // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE
             $document->provisoire = $mc_data['CR_PROVISOIRE'];
             $document->categorie = $mc_data['CATEG'];
             $document->service = $mc_data['SERVICE'];
@@ -113,6 +110,7 @@ class Document{
         $result['CR_PROVISOIRE'] = $this->provisoire;
         $result['CATEG'] = $this->categorie;
         $result['SERVICE'] = $this->service;
+        $result['URL_DOC'] = $this->getURL();
 
         foreach($items as $item){
             $value = "";

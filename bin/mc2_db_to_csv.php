@@ -76,7 +76,7 @@ $logger = LoggerFactory::create_logger("mc2_db_to_csv", __DIR__.'/../log');
 $config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
 $config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
 $site = isset($options['site']) ? $options['site'] : 'sls';
-$period = isset($options['period']) ? $options['period'] : 'P1M';//1mois = P1M, 2 mois = P2M, 60 jours =  P60D
+$period = isset($options['period']) ? $options['period'] : 'P1M';
 
 $mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
 $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
@@ -91,15 +91,15 @@ $mc_extracter = new MCExtractManager(MCExtractManager::SRC_LOCAL_DB,$site,$mc_re
 // -----------------------------------------------------------------------------------------
 
 if(isset($options['dict'])){
-    // ----- DSP 
+    // ----- DSP List
     if(!isset($options['dsp'])){
         $mc_extracter->export_all_dsp_to_csv();
     }
-    // ----- DSP Items
+    // ----- DSP Dictionnary (Items / Pages)
     else{
         $dsp_id = $options['dsp'];
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $mc_extracter->export_dsp_items_to_csv($dsp_id,$item_names);
+        $mc_extracter->export_dsp_dictionnary_to_csv($dsp_id,$item_names);
     }
 }else{
     // ----- Document / Item Value / Patient 
@@ -115,4 +115,4 @@ if(isset($options['dict'])){
         $logger->AddInfo("Parametres inconnus");
     }
 }
-$logger->addInfo("-------- Finished after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

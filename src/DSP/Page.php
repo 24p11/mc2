@@ -35,7 +35,6 @@ class Page{
 
     public static function createFromMCData($dsp_id,$mc_data){
         $page = new Page();
-        var_dump($mc_data);
         $page->site = $mc_data['SITE'];
         $page->dossier_id = $mc_data['DOSSIER_ID'];
         $page->type_document = $mc_data['DOCUMENT_TYPE'];

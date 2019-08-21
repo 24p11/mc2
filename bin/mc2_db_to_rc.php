@@ -47,8 +47,7 @@ use Symfony\Component\Yaml\Yaml;
 date_default_timezone_set('Europe/Paris');
 
 if ($argc < 2) {
-    echo "Usage : \n
-   
+    echo "
     NAME 
     mc2_db_to_rc.php - Extraction depuis DB locale (mc2) vers projet RedCAP
 
@@ -90,7 +89,7 @@ $options = getopt("", $longopts);
 
 $now = new DateTime();
 
-$logger = LoggerFactory::create_logger("mc2_db_to_csv", __DIR__.'/../log');
+$logger = LoggerFactory::create_logger("mc2_db_to_rc", __DIR__.'/../log');
 $config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
 $config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
 $config_redcap = Yaml::parse(file_get_contents(__DIR__."/../config/config_redcap.yml"));
@@ -168,4 +167,4 @@ if(isset($options['dict']) && isset($options['dsp'])){
         $logger->addInfo("Parametres inconnus");
     }
 }
-$logger->addInfo("-------- Finished after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

@@ -75,17 +75,17 @@ if ($argc < 2) {
     - nohtml : supprimer les balises HTML dans les valeurs des items
     
     EXAMPLES
-    - Extraire la liste des DSP depuis la base locale vers un fichier CSV :
+    - Extraire la liste des DSP depuis MiddleCare vers un fichier CSV :
     > php mc2_mc_to_csv.php --dict --site lrb 
     
-    - Extraire le dictionnaire d'un DSP donné depuis la base locale vers un fichier CSV :
+    - Extraire le dictionnaire d'un DSP donné depuis MiddleCare vers un fichier CSV :
     > php mc2_mc_to_csv.php --dict --site sls --dsp DSP2
     
-    - Extraire le dictionnaire d'un DSP avec filtrage des variables/items depuis la base locale vers un fichier CSV :
+    - Extraire le dictionnaire d'un DSP avec filtrage des variables/items depuis MiddleCare vers un fichier CSV :
     > php mc2_mc_to_csv.php --dict --site sls --dsp DSP2 --items 'VAR1290 VAR1312 VAR1333 VAR1358 VAR1370 VAR1418 VAR1419 VAR1426 VAR1481 VAR1496 VAR1497 VAR1498 VAR1501 VAR1504 VAR1505 VAR1508 VAR1509 VAR1515 VAR1516 VAR1525 VAR1711 VAR1780 VAR1809 VAR1817 VAR1940 VAR1941 VAR1989 VAR1990 VAR1992 VAR2124 VAR2128 VAR2140'
     
-    - Extraire les données d'un DSP pour une période donnée depuis la base locale vers un ou plusieurs fichier(s) CSV
-    > php mc2_db_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 
+    - Extraire les données d'un DSP pour une période donnée depuis MiddleCare vers un ou plusieurs fichier(s) CSV
+    > php mc2_mc_to_csv.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 
     ";
     exit(1);
 }
@@ -111,18 +111,18 @@ $csv_writer = new CSVWriter($csv_options,$logger);
 $mc_extracter = new MCExtractManager(MCExtractManager::SRC_MIDDLECARE,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo, $csv_writer, $logger);
 
 if(isset($options['dict'])){
-    // ----- DSP 
+    // ----- DSP  List
     if(!isset($options['dsp'])){
         $mc_extracter->export_all_dsp_to_csv();
     }
-    // ----- DSP Items
+    // ----- DSP Dictionnary (Items / Pages)
     else{
         $dsp_id = $options['dsp'];
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $mc_extracter->export_dsp_items_to_csv($dsp_id,$item_names);
+        $mc_extracter->export_dsp_dictionnary_to_csv($dsp_id,$item_names);
     }
 }else{
-    // ----- Document / Item Value / Patient 
+    // ----- DSP Data (Document / Item Value / Patient)
     if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
         $dsp_id = $options['dsp'];
         $date_debut = new DateTime($options['deb']);
@@ -134,4 +134,4 @@ if(isset($options['dict'])){
         $logger->addInfo("Parametres inconnus");
     }
 }
-$logger->addInfo("-------- Finished after ". $now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->addInfo("Ended after ". $now->diff(new DateTime())->format('%H:%I:%S'));

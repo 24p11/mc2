@@ -12,11 +12,26 @@ use SBIM\DSP\Document;
 use SBIM\DSP\ItemValue;
 use SBIM\DSP\PatientRepository;
 use SBIM\DSP\Patient;
+use SBIM\DSP\Page;
+use SBIM\DSP\Item;
 use SBIM\RedCap\RCDictionnary;
 use SBIM\RedCap\RCItem;
 use SBIM\RedCap\RCInstrument;
 /**
  * MCExtractManager
+ * 
+ * - import_all_dsp_metadata()
+ * - import_dsp_dictionnary($dsp_id)
+ * - import_dsp_data($dsp_id, $date_debut, $date_fin, array $item_names = null)
+ * 
+ * - export_all_dsp_to_csv()
+ * - export_dsp_dictionnary_to_csv($dsp_id, array $item_names = null)
+ * - export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null, $interval = null)
+ * 
+ * - export_redcap_dictionnary($file_name_prefix, $dsp_id, $rc_project)
+ * - export_redcap_data_by_patient_from_db($file_name_prefix, $dsp_id, $date_debut, $date_fin, array $nips = null, $rc_project)
+ * 
+ * - export_dsp_documentation_to_markdown()
  */
 final class MCExtractManager{
 
@@ -49,12 +64,68 @@ final class MCExtractManager{
 		$this->output_folder =  __DIR__."/../data";
 	}
 
-	public function isSourceMiddleCare(){
-		return $this->source === self::SRC_MIDDLECARE;
+	// -------- MC to DB (MiddleCare to SBIM MySQL)
+
+	/**
+	 * Importe la liste des DSP d'un site depuis MC vers DB.
+	 */
+	public function import_all_dsp_metadata(){
+		$log_info = array('site' => $this->site);
+		$this->logger->addInfo("Importing all DSP metadata",$log_info);
+        $all_dsp = $this->mc_repository->getAllDSP();
+        foreach ($all_dsp as $key => $dsp_row)
+			$this->dossier_repository->upsertDossier(Dossier::createFromMCData($dsp_row));
+		$this->logger->addInfo("Imported all DSP metadata",$log_info);
 	}
 
-	public function getSourceName(){
-		return $this->source === self::SRC_MIDDLECARE ? "MiddleCare" : "Local DB";
+	/**
+	 * Importe le dictionnaire (items + pages) d'un DSP depuis MC vers DB.
+	 * 
+	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
+	 */
+	public function import_dsp_dictionnary($dsp_id){
+		$log_info = array('site' => $this->site, 'dsp_id' => $dsp_id);
+		$this->logger->addInfo("Importing DSP Dictionnary",$log_info);
+        $all_dsp_item = $this->mc_repository->getDSPItems($dsp_id);
+        foreach ($all_dsp_item as $key => $dsp_item_row)
+            $this->dossier_repository->upsertItem(Item::createFromMCData($dsp_item_row));
+        $all_dsp_page = $this->mc_repository->getDSPPages($dsp_id);
+        foreach ($all_dsp_page as $key => $dsp_page_row)
+			$this->dossier_repository->upsertPage(Page::createFromMCData($dsp_id,$dsp_page_row));
+		$this->logger->addInfo("Imported DSP Dictionnary",$log_info);
+	}
+
+	/**
+	 * Importe les données d'un DSP depuis MC vers DB.
+	 * 
+	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
+	 * @param \DateTime $date_debut
+	 * @param \DateTime $date_fin
+	 */
+	public function import_dsp_data($dsp_id, $date_debut, $date_fin, array $item_names = null){//, $page_name = null
+		$log_info = array(
+			'site' => $this->site, 
+			'dsp_id' => $dsp_id,
+			'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 
+			'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 
+			'item_names' => $item_names
+		);
+		$this->logger->addInfo("Importing DSP data",$log_info);
+		$interval_max = new DateInterval("P1M");// 1 mois = P1M, 2 mois = P2M, 60 jours =  P60D
+		if($date_debut->diff($date_fin) < $interval_max){
+			$this->get_mc_dsp_data_to_db_chunk($dsp_id, $date_debut, $date_fin,$item_names);
+		}else{
+			$date1 = clone $date_debut;
+			$date2 = clone $date1;
+			$date2->add($interval_max);
+			while($date2 < $date_fin){
+				$this->get_mc_dsp_data_to_db_chunk($dsp_id, $date1, $date2,$item_names);
+				$date1 = clone $date2;
+				$date2->add($interval_max);
+			}
+			$this->get_mc_dsp_data_to_db_chunk($dsp_id, $date1, $date_fin,$item_names);
+		}
+		$this->logger->addInfo("Imported DSP data",$log_info);
 	}
 
 	// -------- CSV
@@ -65,32 +136,42 @@ final class MCExtractManager{
 	 * @return string nom du CSV généré
 	 */
 	public function export_all_dsp_to_csv(){
-		$this->logger->addInfo("-------- Exporting all DSP from ".$this->getSourceName()." of SITE=".$this->site." to CSV file");
+		$log_info = array(
+			'source' => $this->getSourceName(),
+			'site' => $this->site
+		);
+		$this->logger->addInfo("Exporting list of DSP to CSV file",$log_info);
 		$all_dsp = $this->isSourceMiddleCare() 
 			? $this->mc_repository->getAllDSP()
 			: array_map(function($v){ return $v->toMCArray(); }, $this->dossier_repository->findAllDossier());
-		$file_name = $this->csv_writer->save(new CSVFile("DSP",$all_dsp));
-		$this->logger->addInfo("Exported all DSP from ".$this->getSourceName()." to CSV file {$file_name}");
+		$file_name = $this->csv_writer->save(new CSVFile("DSP_".strtoupper($this->site),$all_dsp));
+		$log_info['file'] = $file_name;
+		$this->logger->addInfo("Exported list of DSP to CSV file",$log_info);
 		return $file_name;
 	}
 
 	/**
-	 * Exporte la liste des items d'un DSP (depuis MiddleCare ou la base Locale) vers un fichier CSV.
+	 * Exporte le dictionnaire d'un DSP (depuis MiddleCare ou la base Locale) vers un fichier CSV.
 	 * 
 	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
 	 * @param string[] $item_names (option) liste de nom d'items
 	 * @return string nom du CSV généré
 	 */
-	public function export_dsp_items_to_csv($dsp_id, array $item_names = null){
-		$this->logger->addInfo("-------- Exporting SITE=".$this->site." DSP_ID={$dsp_id} items from ".$this->getSourceName()." to CSV file", ['dsp_id' => $dsp_id, 'item_names' => $item_names]);
-
+	public function export_dsp_dictionnary_to_csv($dsp_id, array $item_names = null){
+		$log_info = array(
+			'source' => $this->getSourceName(),
+			'site' => $this->site, 
+			'dsp_id' => $dsp_id,
+			'item_names' => $item_names
+		);
+		$this->logger->addInfo("Exporting DSP dictionnary to CSV file", $log_info);
 		$item_infos = $this->isSourceMiddleCare() ?
 			$this->mc_repository->getDSPItems($dsp_id,$item_names)
 			: array_map(function($v){ return $v->toMCArray(); }, $this->dossier_repository->findItemByDossierId($dsp_id,$item_names));
-		
 		$file_subtitle = ($item_names === null || count($item_names) < 1) ? "" : "_partial";
 		$file_name = $this->csv_writer->save(new CSVFile("DSP_".strtoupper($this->site)."_{$dsp_id}_dictionnary{$file_subtitle}",$item_infos));
-		$this->logger->addInfo("Exported DSP_ID={$dsp_id} items from ".$this->getSourceName()." to CSV file {$file_name}", array('row_count' => count($item_infos)));
+		$log_info['items_count'] = count($item_infos);
+		$this->logger->addInfo("Exported DSP dictionnary to CSV file", $log_info);
 		return $file_name;
 	}
 
@@ -107,10 +188,21 @@ final class MCExtractManager{
 	 * @return string[] nom de(s) CSV généré(s)
 	 */
 	public function export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null, $interval = null){
-		$this->logger->addInfo("-------- Exporting SITE=".$this->site." DSP_ID={$dsp_id} data from ".$this->getSourceName()." from ".$date_debut->format('Y-m-d')." to ".$date_fin->format('Y-m-d')." to CSV file", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'item_names' => $item_names, 'interval' => $interval));
+		$log_info = array(
+			'source' => $this->getSourceName(),
+			'site' => $this->site, 
+			'dsp_id' => $dsp_id,
+			'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 
+			'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 
+			'item_names' => $item_names,
+			'page_name' => $page_name,
+			'type_doc' => $type_doc,
+			'interval' => $interval
+		);
+		$this->logger->addInfo("Exporting DSP data to CSV file",$log_info);
 		$file_names = array();
 		$interval = $interval === null ? "P1M" : $interval;
-		$interval_max = new DateInterval($interval);//1mois = P1M, 2 mois = P2M, 60 jours =  P60D
+		$interval_max = new DateInterval($interval);
 		if($date_debut->diff($date_fin) < $interval_max){
 			$file_names[] = $this->export_dsp_data_to_csv_chunck($dsp_id,$date_debut,$date_fin,$item_names,$page_name,$type_doc);
 		}else{
@@ -124,123 +216,11 @@ final class MCExtractManager{
 			}
 			$file_names[] = $this->export_dsp_data_to_csv_chunck($dsp_id,$date1,$date_fin,$item_names,$page_name,$type_doc);
 		}
-		$this->logger->addInfo("-------- Exporting DSP_ID={$dsp_id} data from ".$this->getSourceName()." from ".$date_debut->format('Y-m-d')." to ".$date_fin->format('Y-m-d')."to CSV file", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT)));
+		$log_info['files'] = join(",",$file_names);
+		$this->logger->addInfo("Exported DSP data to CSV file(s)",$log_info);
 		return $file_names;
 	}
 
-	private function export_dsp_data_to_csv_chunck($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null){
-		if($this->isSourceMiddleCare()){
-			$items = $this->mc_repository->getDSPItems($dsp_id,$item_names,$page_name);
-			$data = $this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items);
-		}else{
-			$items = $this->dossier_repository->findItemByDossierId($dsp_id,$item_names);
-			$documents = $this->document_repository->findDocumentWithItemValues($dsp_id,$date_debut,$date_fin,$item_names,$page_name,null,$type_doc);
-			$data = array();
-			foreach ($documents as $document){
-				$patients = $this->patient_repository->findPatient($document->patient_id);
-				$document->patient = count($patients) > 0 ? $patients[0] : null;
-				$data[] = $document->toMCArray($items);
-			}
-		}
-		$data = $this->insert_items_infos($data, $dsp_id);
-		$prefix = "DSP_".strtoupper($this->site)."_{$dsp_id}_data_".$date_debut->format('Ymd')."-".$date_fin->format('Ymd');
-		$file_name = $this->csv_writer->save(new CSVFile($prefix, $data));
-		$this->logger->addInfo("Exported DSP_ID={$dsp_id} data from ".$this->getSourceName()." to CSV file {$file_name}", array());
-		return $file_name;
-	}
-
-	// -------- MC to DB (MiddleCare to SBIM MySQL)
-
-	/**
-	* Exporte les données d'un DSP MiddleCare vers DB SBIM
-	* 
-	* @param string $dsp_id identifiant du DSP, ex: 'DSP2'
-	* @param \DateTime $date_debut
-	* @param \DateTime $date_fin
-	* @return string 
-	*/
-	public function export_mc_dsp_data_to_db($dsp_id, $date_debut, $date_fin, array $item_names = null){//, $page_name = null
-		$this->logger->addInfo("-------- export_mc_dsp_data_to_db from ".$date_debut->format(DateHelper::MYSQL_FORMAT)." to ".$date_fin->format(DateHelper::MYSQL_FORMAT));
-		$interval_max = new DateInterval("P1M");//1mois = P1M, 2 mois = P2M, 60 jours =  P60D
-		if($date_debut->diff($date_fin) < $interval_max){
-			$this->get_mc_dsp_data_to_db_chunk($dsp_id, $date_debut, $date_fin,$item_names);
-		}else{
-			$date1 = clone $date_debut;
-			$date2 = clone $date1;
-			$date2->add($interval_max);
-			while($date2 < $date_fin){
-				$this->get_mc_dsp_data_to_db_chunk($dsp_id, $date1, $date2,$item_names);
-				$date1 = clone $date2;
-				$date2->add($interval_max);
-			}
-			$this->get_mc_dsp_data_to_db_chunk($dsp_id, $date1, $date_fin,$item_names);
-		}
-   	}
-
-   	private function get_mc_dsp_data_to_db_chunk($dsp_id, $date_debut, $date_fin, array $item_names = null){
-		$this->logger->addInfo("---- get_mc_dsp_data_to_db_chunk ".$date_debut->format(DateHelper::MYSQL_FORMAT)." to ".$date_fin->format(DateHelper::MYSQL_FORMAT));
-		$now = new DateTime();
-		// get data 
-		$items = $this->mc_repository->getDSPItems($dsp_id,$item_names,null);
-		$mc_documents = $this->mc_repository->getDSPData($dsp_id, $date_debut, $date_fin, $items);
-		$this->logger->addInfo("getDSPData after ".$now->diff(new DateTime())->format('%H:%I:%S'));
-		$patients = array();
-		// delete document and item values
-		$nipros = array_unique(array_column($mc_documents, 'NIPRO'));
-		$this->document_repository->deleteDocumentsAndItemValues($nipros, $item_names);
-		$this->logger->addInfo("deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
-		
-		// TODO set in configuration
-		$batch_size_document = 1000;
-		$batch_size_item = 100;
-		$batch_size_patient = 1000;
-
-		$i = 0;
-		$documents = array();
-		$item_values = array();
-		$patients = array();
-		$patient_ids = array();
-		
-		foreach ($mc_documents as $mc_document){
-			$documents[] = Document::createFromMCData($this->document_repository->base_url,$this->site,$dsp_id,$mc_document);
-			foreach($items as $item){
-				$item_value = ItemValue::createFromMCData($dsp_id,$item,$mc_document);
-				if(!empty($item_value->val))
-					$item_values[] = $item_value;
-			}
-			$patient = Patient::createFromMCData($mc_document);
-			if(!in_array($patient->id,$patient_ids)){
-				$patients[] = $patient;
-				$patient_ids[] = $patient->id;
-			}
-		
-			// upsert documents every $batch_size_document document
-			if($i % $batch_size_document === 0){
-				$this->document_repository->upsertDocuments($documents);
-				$this->logger->addInfo("upsert ".count($documents)." documents on document {$i}");
-				$documents = array();
-			}
-			// upsert item values every $batch_size_item documents
-			if($i % $batch_size_item === 0){
-				$this->document_repository->upsertItemValues($item_values);
-				$this->logger->addInfo("upsert ".count($item_values)." item values on document {$i}");
-				$item_values = array();
-			}
-			// upsert patients every $batch_size_patient documents
-			if($i % $batch_size_patient === 0){
-				$this->patient_repository->upsertPatients($patients);
-				$this->logger->addInfo("upsert ".count($patients)." patients on document {$i}");
-				$patients = array();
-			}
-			$i++;
-		}
-		$this->document_repository->upsertDocuments($documents);
-		$this->document_repository->upsertItemValues($item_values);
-		$this->patient_repository->upsertPatients($patients);
-		$this->logger->addInfo("upsert ".count($documents)." documents on document {$i}");
-		$this->logger->addInfo("upsert ".count($item_values)." item values on document {$i}");
-		$this->logger->addInfo("upsert ".count($patients)." patients on document {$i}");
-	}
 
 	// -------- REDCAP CSV (dictionnary.csv + data.csv)
 
@@ -251,19 +231,27 @@ final class MCExtractManager{
 	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
 	 * @param \SBIM\RedCap\RCProject $rc_project
 	 */
-	public function export_redcap_dictionnary($file_name, $dsp_id, $rc_project){
-		$this->logger->addInfo("-------- Exporting SITE=".$this->site." DSP_ID={$dsp_id} RC data dictionnary from ".$this->getSourceName()." to CSV={$file_name}",array('dsp_id' => $dsp_id,'main_instrument.name' => $rc_project->main_instrument->name, 'main_instrument.item_names' => join(',',$rc_project->main_instrument->item_names)));
+	public function export_redcap_dictionnary($file_name_prefix, $dsp_id, $rc_project){
+		$log_info = array(
+			'source' => $this->getSourceName(),
+			'site' => $this->site, 
+			'dsp_id' => $dsp_id,
+			'file_name_prefix' => $file_name_prefix,
+			'main_instrument.name' => $rc_project->main_instrument->name, 
+			'main_instrument.item_names' => join(',',$rc_project->main_instrument->item_names)
+		);
+		$this->logger->addInfo("Exporting RC data dictionnary to CSV file",$log_info);
 		if($rc_project->event_as_document_type === false){
 			$mc_items = $this->get_items($dsp_id);
 			$rc_dictionnary = RCDictionnary::create_from_mc_items_and_rcproject($dsp_id, $mc_items, $rc_project);
-			$file_name = $this->csv_writer->save(new CSVFile($file_name,$rc_dictionnary->items));
 		}else{
 			$mc_items = $this->get_items($dsp_id,$rc_project->event_as_document_type);
 			$rc_dictionnary = RCDictionnary::create_from_mc_items_and_rcproject_and_pages($dsp_id, $mc_items, $rc_project);
-			$file_name = $this->csv_writer->save(new CSVFile($file_name,$rc_dictionnary->items));
-			
 		}
-		$this->logger->addInfo("Exported DSP_ID={$dsp_id} RC data dictionnary from ".$this->getSourceName()." ",array('row_count' => count($rc_dictionnary->items)));
+		$file_name = $this->csv_writer->save(new CSVFile($file_name_prefix,$rc_dictionnary->items));
+		$log_info['item_count'] = count($rc_dictionnary->items);
+		$log_info['file_name'] = $file_name;
+		$this->logger->addInfo("Exported RC data dictionnary to CSV file",$log_info);
 		return $file_name;
 	}
 
@@ -281,7 +269,15 @@ final class MCExtractManager{
 	 * @param bool $longitudinal
 	 */
 	public function export_redcap_data_by_patient_from_db($file_name_prefix, $dsp_id, $date_debut, $date_fin, array $nips = null, $rc_project){
-		$this->logger->addInfo("-------- Exporting SITE=".$this->site." DSP_ID={$dsp_id} RC data by patient from local DB to CSV={$file_name_prefix}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT)));
+		$log_info = array(
+			'site' => $this->site, 
+			'dsp_id' => $dsp_id,
+			'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 
+			'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 
+			'file_name_prefix' => $file_name_prefix,
+			'nips' => $nips
+		);
+		$this->logger->addInfo("Exporting RC data by patient from local DB to CSV",$log_info);
 		$file_names = array();
 		// Get RC dictionnary
 		if($rc_project->event_as_document_type === false){
@@ -362,7 +358,7 @@ final class MCExtractManager{
 			$prefix = "{$file_name_prefix}_".$date_debut->format('Ymd')."-".$date_fin->format('Ymd')."_".$chunk_i;
 			$file_name = $this->csv_writer->save(new CSVFile($prefix, $rc_data));
 			$file_names[] = $file_name;
-			$this->logger->addInfo("Exported SITE=".$this->site." DSP_ID={$dsp_id} RC data from local DB  to {$file_name}, chunck {$chunk_i}-".($chunk_i + $CHUNK_COUNT), array('row_count' => count($rc_data)));
+			$this->logger->addInfo("Exported RC data from local DB to {$file_name}, chunck {$chunk_i}-".($chunk_i + $CHUNK_COUNT), array('row_count' => count($rc_data)));
 		}
 		return $file_names;
 	}
@@ -373,7 +369,7 @@ final class MCExtractManager{
 	 * Exporter la documentation de l'ensemble des DSP de MiddleCare au format MarkDown.
 	 */
 	public function export_dsp_documentation_to_markdown(){
-		$this->logger->addInfo("-------- Export DSP documentation (as MarkDown)");
+		$this->logger->addInfo("Exporting DSP documentation (as MarkDown)");
 		$all_dsp = $this->mc_repository->getAllDSP();
 		$all_dsp_info = array();
 		$item_infos_needed = array("BLOC_LIBELLE","ITEM_ID","TYPE","MCTYPE","LIBELLE_BLOC","LIBELLE_SECONDAIRE","LIST_NOM","LIST_VALUES");
@@ -457,6 +453,14 @@ final class MCExtractManager{
 
 	// -------- Helpers 
 
+	private function isSourceMiddleCare(){
+		return $this->source === self::SRC_MIDDLECARE;
+	}
+
+	private function getSourceName(){
+		return $this->source === self::SRC_MIDDLECARE ? "MiddleCare" : "Local DB";
+	}
+
 	/**
 	 * Retourne les items d'un DSP (depuis MiddleCare ou la base Locale)
 	 * 
@@ -511,10 +515,96 @@ final class MCExtractManager{
 		return $item_infos;
 	}
 
+	private function export_dsp_data_to_csv_chunck($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null){
+		if($this->isSourceMiddleCare()){
+			$items = $this->mc_repository->getDSPItems($dsp_id,$item_names,$page_name);
+			$data = $this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items);
+		}else{
+			$items = $this->dossier_repository->findItemByDossierId($dsp_id,$item_names);
+			$documents = $this->document_repository->findDocumentWithItemValues($dsp_id,$date_debut,$date_fin,$item_names,$page_name,null,$type_doc);
+			$data = array();
+			foreach ($documents as $document){
+				$patients = $this->patient_repository->findPatient($document->patient_id);
+				$document->patient = count($patients) > 0 ? $patients[0] : null;
+				$data[] = $document->toMCArray($items);
+			}
+		}
+		$data = $this->insert_items_infos($data, $dsp_id);
+		$prefix = "DSP_".strtoupper($this->site)."_{$dsp_id}_data_".$date_debut->format('Ymd')."-".$date_fin->format('Ymd');
+		$file_name = $this->csv_writer->save(new CSVFile($prefix, $data));
+		$this->logger->addDebug("Exported DSP data chunk to CSV file",array('file' => $file_name));
+		return $file_name;
+	}
+	
+	private function get_mc_dsp_data_to_db_chunk($dsp_id, $date_debut, $date_fin, array $item_names = null){
+		$this->logger->addDebug("get_mc_dsp_data_to_db_chunk ".$date_debut->format(DateHelper::MYSQL_FORMAT)." to ".$date_fin->format(DateHelper::MYSQL_FORMAT));
+		$now = new DateTime();
+		// get data 
+		$items = $this->mc_repository->getDSPItems($dsp_id,$item_names,null);
+		$mc_documents = $this->mc_repository->getDSPData($dsp_id, $date_debut, $date_fin, $items);
+		$this->logger->addDebug("Getting DSP data took ".$now->diff(new DateTime())->format('%H:%I:%S'));
+		$patients = array();
+		// delete document and item values
+		$nipros = array_unique(array_column($mc_documents, 'NIPRO'));
+		$this->document_repository->deleteDocumentsAndItemValues($nipros, $item_names);
+		$this->logger->addDebug("Deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+		
+		// TODO set in configuration
+		$batch_size_document = 1000;
+		$batch_size_item = 100;
+		$batch_size_patient = 1000;
+
+		$i = 0;
+		$documents = array();
+		$item_values = array();
+		$patients = array();
+		$patient_ids = array();
+		
+		foreach ($mc_documents as $mc_document){
+			$documents[] = Document::createFromMCData($this->document_repository->base_url,$this->site,$dsp_id,$mc_document);
+			foreach($items as $item){
+				$item_value = ItemValue::createFromMCData($dsp_id,$item,$mc_document);
+				if(!empty($item_value->val))
+					$item_values[] = $item_value;
+			}
+			$patient = Patient::createFromMCData($mc_document);
+			if(!in_array($patient->id,$patient_ids)){
+				$patients[] = $patient;
+				$patient_ids[] = $patient->id;
+			}
+		
+			// upsert documents every $batch_size_document document
+			if($i % $batch_size_document === 0){
+				$this->document_repository->upsertDocuments($documents);
+				$this->logger->addDebug("Upserted ".count($documents)." documents");
+				$documents = array();
+			}
+			// upsert item values every $batch_size_item documents
+			if($i % $batch_size_item === 0){
+				$this->document_repository->upsertItemValues($item_values);
+				$this->logger->addDebug("Upserted ".count($item_values)." item values");
+				$item_values = array();
+			}
+			// upsert patients every $batch_size_patient documents
+			if($i % $batch_size_patient === 0){
+				$this->patient_repository->upsertPatients($patients);
+				$this->logger->addDebug("Upserted ".count($patients)." patients");
+				$patients = array();
+			}
+			$i++;
+		}
+		$this->document_repository->upsertDocuments($documents);
+		$this->document_repository->upsertItemValues($item_values);
+		$this->patient_repository->upsertPatients($patients);
+		$this->logger->addDebug("Upserted ".count($documents)." documents");
+		$this->logger->addDebug("Upserted ".count($item_values)." item values");
+		$this->logger->addDebug("Upserted ".count($patients)." patients");
+	}
+
 	// ---- CSV Helpers
 
 	/**
-	 * Insère des informations complémentaires sur les types des items sur les première lignes du tableau des données.
+	 * Insère des informations complémentaires sur les types des items sur les premières lignes du tableau des données.
 	 */
 	private function insert_items_infos(array $rows, $dsp_id){
 		$new_rows = array();
@@ -557,10 +647,10 @@ final class MCExtractManager{
 
 	// ---- RedCap Helpers
 
+	// WIP
 	// Transcode un document MiddleCare vers un event RedCap :
 	// - pour les champs à liste de valeur = remplacer la valeur par l'index dans la liste (et ajouter autant de colonne que de valeurs différentes possibles)
 	// - pour les checkbox simple oui/non remplacer valeur 'on' par 1 sinon 0
-	// WIP
 	private static function transcode_mc_data_to_rc_data($mc_data_row,$rc_dictionnary,$event_as_document_type){
 		$new_row = array();
 		// Si projet RC "event as doct", récupérer le type du document 
@@ -574,12 +664,11 @@ final class MCExtractManager{
 				// ex: 
 				// - variable de document : VAR124 -> Item VAR124 (classique) ou VAR124 -> Item "VAR124_Cr de CS"  (EaD)
 				// - variable patient : IPP -> Item IPP (classique ou EaD) 
-				$rc_dictionnary_item = $rc_dictionnary->search_item($var_name,$document_type);//$rc_dictionnary->items[$var_name];
+				$rc_dictionnary_item = $rc_dictionnary->search_item($var_name,$document_type);
 				if($rc_dictionnary_item === null)
 					continue;
 				
 				$var_name = RCDictionnary::clean_variable_name($rc_dictionnary_item[RCDictionnary::FIELD_NAME_INDEX]);
-				
 				switch($rc_dictionnary_item[RCDictionnary::FIELD_TYPE_INDEX]){
 					case 'dropdown': 
 						// TEST suppression de la valeur (= '') quand valeur vide
@@ -613,18 +702,16 @@ final class MCExtractManager{
 			// Pour chaque variable du document MiddleCare
 			foreach($mc_data_row as $key => $value){
 				$var_name = $key;
-			
 				// Chercher l'item correspondant à la variable (et au type de document dans le cas des projets "Event as Doct"
 				// dans le data dictionnary RedCap.
 				// ex: 
 				// - variable de document : VAR124 -> Item VAR124 (classique) ou VAR124 -> Item "VAR124_Cr de CS"  (EaD)
 				// - variable patient : IPP -> Item IPP (classique ou EaD) 
-				$rc_dictionnary_item = $rc_dictionnary->search_item($var_name,$document_type);//$rc_dictionnary->items[$var_name];
+				$rc_dictionnary_item = $rc_dictionnary->search_item($var_name,$document_type);
 				if($rc_dictionnary_item === null)
 					continue;
 				
 				$var_name = RCDictionnary::clean_variable_name($rc_dictionnary_item[RCDictionnary::FIELD_NAME_INDEX]);
-				
 				switch($rc_dictionnary_item[RCDictionnary::FIELD_TYPE_INDEX]){
 					case 'dropdown': 
 						$new_row[$var_name] = RCDictionnary::get_index_from_value($value, $rc_dictionnary_item[RCDictionnary::CHOICES_INDEX]);	

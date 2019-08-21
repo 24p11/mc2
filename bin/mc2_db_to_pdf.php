@@ -28,16 +28,16 @@ use Symfony\Component\Yaml\Yaml;
 date_default_timezone_set('Europe/Paris');
 
 if ($argc < 2) {
-    echo "Usage : \n";
+    echo "\n";
     exit(1);
 }
 
-$longopts = array("dsp:", "deb:", "fin:", "nip:", "ipp:","site:");
+$longopts = array("dsp:", "deb:", "fin:", "nip:", "ipp:", "site:");
 $options = getopt("", $longopts);
 
 $now = new DateTime();
 
-$logger = LoggerFactory::create_logger("mc2_db_to_csv", __DIR__.'/../log');
+$logger = LoggerFactory::create_logger("mc2_db_to_pdf", __DIR__.'/../log');
 $config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
 $config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
 $site = isset($options["site"]) ? $options["site"] : 'sls';
@@ -82,4 +82,4 @@ if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
 }else{
     $logger->addInfo("Parametres inconnus");
 }
-$logger->addInfo("-------- Finished after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

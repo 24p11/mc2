@@ -19,6 +19,7 @@ class LoggerFactory{
 
         $output = "[%datetime%][%channel%][%level_name%] %message% %context% %extra%\n";
         $line_formatter = new LineFormatter($output, DateHelper::MYSQL_FORMAT);
+        $line_formatter->ignoreEmptyContextAndExtra(true);
 
         // Logs records to a file and creates one logfile per day.
         $rotating_handler = new RotatingFileHandler("{$path}/{$name}.log", 0, Logger::DEBUG);
@@ -47,10 +48,10 @@ class LoggerFactory{
         ErrorHandler::register($logger);
 
         // Adds the current request URI, request method and client IP to a log record.
-        //$logger->pushProcessor(new WebProcessor);
+        // $logger->pushProcessor(new WebProcessor);
 
         // Adds the line/file/class/method from which the log call originated.
-        //$logger->pushProcessor(new IntrospectionProcessor);
+        // $logger->pushProcessor(new IntrospectionProcessor);
         
         return $logger;
     }

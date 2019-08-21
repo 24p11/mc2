@@ -419,6 +419,12 @@ Exemples :
 - TODO ajouter CSV dictionnaire RedCap d'exemple
 - TODO ajout CSV données (long | flat) d'exemple
 
+Annexe - Lexique
+===============================================================================
+
+DSP : Dossier de Spécialité (MiddleCare)
+DDS : Dossier de Soin (MiddleCare)
+DCS : Dossier Clinique Structuré (MiddleCare)
 
 Annexe - Documentation 
 ===============================================================================

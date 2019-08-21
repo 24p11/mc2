@@ -172,7 +172,7 @@ class MCRepository{
      * @return array [LISTE_NOM, LISTE_DESCRIPTION, LISTE_VAL, LISTE_VAL_INDEX, LISTE_VAL_IS_DEFAULT]
      */
     public function getListeValues($dsp_id, $liste_name){
-        if(mb_substr($liste_name, 0, 3 ) !== "DSP")
+        if(mb_substr($liste_name, 0, 1 ) !== "D")
             return [ 'description' => $liste_name, 'values' => array() ];
 
         $query = "SELECT NM_LD LISTE_NOM, 

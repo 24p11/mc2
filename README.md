@@ -1,7 +1,7 @@
 mc2 - ETL MiddleCare
 ===============================================================================
 
-mc2 a pour objectif d'automatiser l'extraction des données du Dossier Patient Informatisé (DPI) **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP). Seuls les dossiers structurés (Dossiers de Service (DSP)) de l'application  sont extractibles. L'application propose en outre différents formats de persistance dans une base de données ou d'export pour faciliter l'exploitation des données.
+mc2 a pour objectif d'automatiser l'extraction des données du Dossier Patient Informatisé (DPI) **MiddleCare** via une suite d'outils en ligne de commande (développée en PHP). Seuls les dossiers structurés (Dossiers de Service (DSP), Dossier Clinique Structuré (DCS), Dossier de Soins (DDS)) de l'application sont extractibles. L'application propose en outre différents formats de persistance dans une base de données ou d'export pour faciliter l'exploitation des données.
 
 L'extraction est réalisée en 2 temps:
 - une première fonction permet l'extraction du **dictionnaire** des variables disponibles dans un DSP (= la structure des formulaires MiddleCare)
@@ -9,11 +9,8 @@ L'extraction est réalisée en 2 temps:
 
 L'ensemble de ces données peut être enregistré au format **CSV**, dans une base de données **MySQL** ou dans un projet **RedCap**.
 
-**Note importante :**
+Ce document fourni des exemples de chacune des étapes permettant l'extraction d'un DSP ainsi qu'un exemple complet de chargement d'un DSP MiddleCare vers un projet RedCap.
 
-Afin de ne pas solliciter inutilement la base de production de MiddleCare, il est conseillé  d'extraire les données d'un DSP dans une base de donnée MySQL (par exemple la nuit, automatiquement et périodiquement) puis d'exporter de cette base les données d'intérêt dans un fichiers CSV ou un projet RedCap.  
-
-Ce document fourni des exemples de chacune de ces étapes permettant l'extraction d'un DSP ainsi qu'un exemple complet de chargement d'un DSP MiddleCare vers un projet RedCap.
 
 Prérequis  
 ===============================================================================
@@ -67,6 +64,10 @@ Avant toute extraction à destination d'un projet RedCap, il est conseillé de r
 - **Période** : les dates de début et de fin (non incluse) de l'extraction au format AAAAMMJJ,  ex: Année 2018 = [début : 20180101, fin : 20190101]
 
 - **Liste des variables à intégrer dans RedCap** : un projet RedCap n'étant pas voué à intégrer la totalité des variables d'un DSP (parfois plus de 600 variables par document, dont du texte libre), il est nécessaire d'en faire une sélection pertinente à partir du dictionnaire des variables d'un DSP MiddleCare (cf. extraction d'un dictionnaire d'un DSP). 
+
+**Note importante :**
+
+Afin de ne pas solliciter inutilement la base de production de MiddleCare, il est conseillé  d'extraire les données d'un DSP dans une base de donnée MySQL (par exemple la nuit, automatiquement et périodiquement) puis d'exporter de cette base les données d'intérêt dans un fichiers CSV ou un projet RedCap.  
 
 
 Extraction MiddleCare vers base de données MySQL

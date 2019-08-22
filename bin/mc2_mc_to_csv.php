@@ -131,7 +131,7 @@ if(isset($options['dict'])){
         $page_name = isset($options["page"]) ? $options["page"] : null;
         $mc_extracter->export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin,$item_names,$page_name);
     }else{
-        $logger->addInfo("Parametres inconnus");
+        $logger->addInfo("Unknown parameters",array('options' => $options));
     }
 }
 $logger->addInfo("Ended after ". $now->diff(new DateTime())->format('%H:%I:%S'));

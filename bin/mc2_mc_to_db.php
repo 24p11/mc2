@@ -122,7 +122,7 @@ if(isset($options['dict'])){
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
         $mc_extracter->import_dsp_data($dsp_id, $date_debut, $date_fin,$item_names);
     }else{
-        $logger->AddInfo("Parametres inconnus");
+        $logger->addInfo("Unknown parameters",array('options' => $options));
     }
 }
 $logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

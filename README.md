@@ -401,7 +401,7 @@ poids | Poids (kg) du patient à la date du document | 70
 taille | Taille (cm) du patient à la date du document | 180
 date_exam | Date de l'examen / de la consultation / de la création du document au format JJ/MM/AAAA | 01/01/2019
 date_maj | Date de la dernière mise à jour du document au format JJ/MM/AAAA | 02/01/2019
-oper | Identifiant du dernier utilisateur à avoir modifié le document (APH?) | 4087281
+oper | Identifiant du dernier utilisateur à avoir modifié le document (APH?) | 1234567
 revision | Version | 12
 extension | Extension du document généré | ".pdf"
 var1710 | variable du DSP |
@@ -423,9 +423,9 @@ Exemples :
 Annexe - Lexique
 ===============================================================================
 
-DSP : Dossier de Spécialité (MiddleCare)
-DDS : Dossier de Soin (MiddleCare)
-DCS : Dossier Clinique Structuré (MiddleCare)
+- **DSP** : Dossier de Spécialité (MiddleCare)
+- **DDS** : Dossier de Soin (MiddleCare)
+- **DCS** : Dossier Clinique Structuré (MiddleCare)
 
 Annexe - Documentation 
 ===============================================================================

@@ -80,6 +80,6 @@ if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
         $i++;
     }
 }else{
-    $logger->addInfo("Parametres inconnus");
+    $logger->addInfo("Unknown parameters",array('options' => $options));
 }
 $logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

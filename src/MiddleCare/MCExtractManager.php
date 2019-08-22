@@ -29,7 +29,7 @@ use SBIM\RedCap\RCInstrument;
  * - export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null, $interval = null)
  * 
  * - export_redcap_dictionnary($file_name_prefix, $dsp_id, $rc_project)
- * - export_redcap_data_by_patient_from_db($file_name_prefix, $dsp_id, $date_debut, $date_fin, array $nips = null, $rc_project)
+ * - export_redcap_data($file_name_prefix, $dsp_id, $date_debut, $date_fin, $rc_project)
  * 
  * - export_dsp_documentation_to_markdown()
  */
@@ -258,27 +258,28 @@ final class MCExtractManager{
 	/**	
 	 * Exporte les données RedCap d'un DSP depuis la base locale pour tous les patients venus sur une période donnée vers fichier RedCap  CSV.
 	 * 
-	 * TEMP TODO NOTE : difference principale avec from_mc : pour les patients donné on ne récupère que les documents de la période donnée, ce qui rend perilleux le chargement en plusieurs fois ! ( => a moins de toujours prendre la même date de début et de retarder la date de fin)
+	 * IMPORTANT : 
+	 * Si les données RedCap doivent être mise à jour après le chargement initial, il est important de garder la même date de début et si besoin de ne modifier que la date de fin de la période à charger.
+	 * En effet, dans le cas des projets longitudinaux, l'API RedCap nous contraint à assigner un numéro "redcap_repeat_instance" à un document qui doit rester le même d'un chargement à un autre. 
+	 * Ici, le document le plus ancien prend la valeur redcap_repeat_instance=1 et les documents suivants incrementent cette valeur. 
+	 * Si on change la date de début après le premier chargement, l'ancien document le plus ancien risque de ne plus la même valeur redcap_repeat_instance, ce qui risque de provoquer des incohérences dans les données.
 	 * 
-	 * @param string $file_name préfix du nom fichier résultat
+	 * @param string $file_name_prefix préfix du nom fichier résultat
 	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
 	 * @param \DateTime $date_debut
      * @param \DateTime $date_fin
-	 * @param string[] $ipps
-	 * @param \SBIM\RedCap\RCInstrument $main_instrument
-	 * @param bool $longitudinal
+	 * @param \SBIM\RedCap\RCProject $rc_project
 	 */
-	public function export_redcap_data_by_patient_from_db($file_name_prefix, $dsp_id, $date_debut, $date_fin, array $nips = null, $rc_project){
+	public function export_redcap_data($file_name_prefix, $dsp_id, $date_debut, $date_fin, $rc_project){
 		$log_info = array(
 			'site' => $this->site, 
 			'dsp_id' => $dsp_id,
 			'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 
 			'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 
-			'file_name_prefix' => $file_name_prefix,
-			'nips' => $nips
+			'file_name_prefix' => $file_name_prefix
 		);
 		$this->logger->addInfo("Exporting RC data by patient from local DB to CSV",$log_info);
-		$file_names = array();
+
 		// Get RC dictionnary
 		if($rc_project->event_as_document_type === false){
 			$mc_items = $this->get_items($dsp_id);
@@ -288,25 +289,27 @@ final class MCExtractManager{
 			$rc_dictionnary = RCDictionnary::create_from_mc_items_and_rcproject_and_pages($dsp_id, $mc_items, $rc_project);
 		}
 		$data_column_names = $rc_dictionnary->get_data_column_names();
+
 		// Get all patient from period
 		$patient_ids = $this->document_repository->findAllPatientId($dsp_id, $date_debut, $date_fin);
-
+		
+		$file_names = array();
 		$CHUNK_COUNT = 10;
 		$chunks_of_patientids = array_chunk($patient_ids, $CHUNK_COUNT);
 		$chunk_i = 0;
 		foreach($chunks_of_patientids as $patientids_chunk){
 			$chunk_i++;
+
 			// Get MC Data
+			$mc_data = array();
 			$items = $this->dossier_repository->findItemByDossierId($dsp_id,$rc_project->main_instrument->item_names);
 			$documents = $this->document_repository->findDocumentWithItemValues($dsp_id, $date_debut, $date_fin, $rc_project->main_instrument->item_names, null,$patientids_chunk);
-			$result = array();
 			foreach ($documents as $document){
 				$patients = $this->patient_repository->findPatient($document->patient_id);
 				$document->patient = count($patients) > 0 ? $patients[0] : null;
-				$result[] = $document->toMCArray($items);
+				$mc_data[] = $document->toMCArray($items);
 			}
-			
-			$mc_data = $result;
+
 			// Transcoding MC data to RC data
 			$rc_data = array();
 			if($rc_project->longitudinal === false){
@@ -317,43 +320,52 @@ final class MCExtractManager{
 					);
 				}
 			}else{
-				$ipps = array();
-
+				
 				$shared_event_name = $rc_project->getUniqueSharedEventName();
 				$repeatable_event_name = $rc_project->getUniqueRepeatableEventName();
-				$shared_event_variable_count = $rc_project->shared_event_variable_count;// nip,nom,prenom,datnai,sexe
+				$shared_event_variable_count = $rc_project->shared_event_variable_count;
 				
-				$columns_completed = array_map(function($v){ return preg_replace('/^[0-9]/','', str_replace('__','_',str_replace(' ','_',strtolower($v))),1).'_complete';}, $rc_dictionnary->get_form_names());
+				$columns_completed = array_map(
+					function($v){ 
+						return preg_replace('/^[0-9]/','', str_replace('__','_',str_replace(' ','_',strtolower($v))),1).'_complete';
+					}, 
+					$rc_dictionnary->get_form_names()
+				);
 				$completes = array();
 				foreach($columns_completed as $value)
 					$completes[$value] = null;
+				
+				$patients_redcap_repeat_instance = array();
 				foreach($mc_data as $data){
 					$tmp = ArrayHelper::reorderColumns(
 						$this->transcode_mc_data_to_rc_data($data,$rc_dictionnary,$rc_project->event_as_document_type),
 						$data_column_names
 					);
-					if(!array_key_exists($tmp['IPP'],$ipps)){
-						// ajouter une ligne pour l'event patient (IPP,redcap_event_name,redcap_repeat_instrument,redacap_repeat_instance...)
+
+					// If new patient, add row for patient event (IPP,redcap_event_name,redcap_repeat_instrument,redacap_repeat_instance...)
+					if(!array_key_exists($tmp['IPP'],$patients_redcap_repeat_instance)){
 						$patient = array_slice($tmp, 0, 1, true) 
 							+ array('redcap_event_name' => $shared_event_name,'redcap_repeat_instrument'=> null, 'redcap_repeat_instance' => null) 
 							+ array_slice($tmp, 1, $shared_event_variable_count, true)
 							+ array_map(function() {}, array_slice($tmp, $shared_event_variable_count , null, true))
 							+ $completes;
-						$ipps[$tmp['IPP']] = 1;
+						$patients_redcap_repeat_instance[$tmp['IPP']] = 1;
 						$rc_data[] = $patient;
 					}
 					
-					$redcap_repeat_instance = $ipps[$tmp['IPP']];
-					// ajouter une ligne pour le repeatable form
+					// Add row for repeatable event
+					$redcap_repeat_instance = $patients_redcap_repeat_instance[$tmp['IPP']];
 					$rc_data[] = array_slice($tmp, 0, 1, true) 
 						+ array('redcap_event_name' => $repeatable_event_name,'redcap_repeat_instrument'=> null, 'redcap_repeat_instance' => $redcap_repeat_instance)
 						+ array_map(function() {}, array_slice($tmp, 1, $shared_event_variable_count, true))
 						+ array_slice($tmp, $shared_event_variable_count, null, true)
 						+ $completes;
-					// incrementer 'redcap_repeat_instance' pour chaque event
-					$ipps[$tmp['IPP']]++;
+
+					// Increment 'redcap_repeat_instance' for each repeatable event
+					$patients_redcap_repeat_instance[$tmp['IPP']]++;
 				}
 			}
+			
 			// Write CSV
 			$prefix = "{$file_name_prefix}_".$date_debut->format('Ymd')."-".$date_fin->format('Ymd')."_".$chunk_i;
 			$file_name = $this->csv_writer->save(new CSVFile($prefix, $rc_data));
@@ -539,12 +551,12 @@ final class MCExtractManager{
 	private function get_mc_dsp_data_to_db_chunk($dsp_id, $date_debut, $date_fin, array $item_names = null){
 		$this->logger->addDebug("get_mc_dsp_data_to_db_chunk ".$date_debut->format(DateHelper::MYSQL_FORMAT)." to ".$date_fin->format(DateHelper::MYSQL_FORMAT));
 		$now = new DateTime();
-		// get data 
+		// Get data 
 		$items = $this->mc_repository->getDSPItems($dsp_id,$item_names,null);
 		$mc_documents = $this->mc_repository->getDSPData($dsp_id, $date_debut, $date_fin, $items);
 		$this->logger->addDebug("Getting DSP data took ".$now->diff(new DateTime())->format('%H:%I:%S'));
 		$patients = array();
-		// delete document and item values
+		// Delete document and item values
 		$nipros = array_unique(array_column($mc_documents, 'NIPRO'));
 		$this->document_repository->deleteDocumentsAndItemValues($nipros, $item_names);
 		$this->logger->addDebug("Deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
@@ -573,19 +585,19 @@ final class MCExtractManager{
 				$patient_ids[] = $patient->id;
 			}
 		
-			// upsert documents every $batch_size_document document
+			// Upsert documents every $batch_size_document document
 			if($i % $batch_size_document === 0){
 				$this->document_repository->upsertDocuments($documents);
 				$this->logger->addDebug("Upserted ".count($documents)." documents");
 				$documents = array();
 			}
-			// upsert item values every $batch_size_item documents
+			// Upsert item values every $batch_size_item documents
 			if($i % $batch_size_item === 0){
 				$this->document_repository->upsertItemValues($item_values);
 				$this->logger->addDebug("Upserted ".count($item_values)." item values");
 				$item_values = array();
 			}
-			// upsert patients every $batch_size_patient documents
+			// Upsert patients every $batch_size_patient documents
 			if($i % $batch_size_patient === 0){
 				$this->patient_repository->upsertPatients($patients);
 				$this->logger->addDebug("Upserted ".count($patients)." patients");
@@ -616,7 +628,6 @@ final class MCExtractManager{
 			$item_liste_values = array();
 			$items_keys = array_keys($rows[0]);
 			foreach ($items_keys as $key){
-				// get key
 				$key_exist = false;
 				foreach ($item_info as $value) {
 					if($key === $value['ITEM_ID']){

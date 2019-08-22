@@ -9,7 +9,7 @@ class RCProject{
     public $arm_name = 'arm_1';
     public $shared_event_name = 'patient_arm_1';
     public $repeatable_event_name = 'cs_senologie_arm_1';
-    public $shared_event_variable_count = 5;
+    public $shared_event_variable_count = 5; // nip, nom, prenom, datnai, sexe
     public $event_as_document_type = false;
 
     public function __construct($name,$main_instrument){
@@ -27,6 +27,5 @@ class RCProject{
 
     private static function toLowerUnderscore($string_to_lower){
         return str_replace(' ','_',mb_strtolower($string_to_lower));
-        //return str_replace(' ','_',$string_to_lower);
     }
 }

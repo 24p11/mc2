@@ -152,8 +152,7 @@ if(isset($options['dict']) && isset($options['dsp'])){
         $file_name .= $rc_project->longitudinal === true ? "": "_flat";
         $file_name .= "_".strtoupper($site)."_{$dsp_id}";
         
-        $nips = null; 
-        $file_names = $mc_extracter->export_redcap_data_by_patient_from_db($file_name,$dsp_id,$date_debut,$date_fin,$nips,$rc_project);
+        $file_names = $mc_extracter->export_redcap_data($file_name,$dsp_id,$date_debut,$date_fin,$rc_project);
 
         // ---- RC Data -> RC API 
         $no_api_call = isset($options["noapicall"]);
@@ -164,7 +163,7 @@ if(isset($options['dict']) && isset($options['dsp'])){
             }
         }
     }else{
-        $logger->addInfo("Parametres inconnus");
+        $logger->addInfo("Unknown parameters",array('options' => $options));
     }
 }
 $logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

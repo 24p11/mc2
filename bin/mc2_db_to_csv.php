@@ -112,7 +112,7 @@ if(isset($options['dict'])){
         $type_doc = isset($options["type_doc"]) ? $options["type_doc"] : null;
         $mc_extracter->export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin,$item_names,$page_name,$type_doc,$period);
     }else{
-        $logger->AddInfo("Parametres inconnus");
+        $logger->addInfo("Unknown parameters",array('options' => $options));
     }
 }
 $logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

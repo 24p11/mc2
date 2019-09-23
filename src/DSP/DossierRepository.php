@@ -12,14 +12,6 @@ use Doctrine\DBAL\DriverManager;
  */
 class DossierRepository{
 
-    private $db = null;
-    private $logger;
-    private $site = null;
-
-    private $dossier_table = null;
-    private $item_table = null;
-    private $page_table = null;
-
     const DEFAULT_DOSSIER_TABLE = "mcdsp_dossier";
     const DOSSIER_COLUMNS = "dossier_id, site, nom, libelle, uhs, created, modified, version"; // = *
 
@@ -28,6 +20,14 @@ class DossierRepository{
 
     const DEFAULT_PAGE_TABLE = "mcdsp_page";
     const PAGE_COLUMNS = "type_document, dossier_id, site, page_libelle, page_code, page_ordre, created, modified, version"; // = *
+
+    private $db = null;
+    private $logger;
+    private $site = null;
+
+    private $dossier_table = null;
+    private $item_table = null;
+    private $page_table = null;
 
     public function get_dossier_table(){
         return ($this->dossier_table === null) ? self::DEFAULT_DOSSIER_TABLE : $this->dossier_table;

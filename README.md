@@ -310,7 +310,8 @@ TODO
 ===============================================================================
 
 - refactoring : tables OMOP friendly
-- doc : Ajouter CSV anonymisés d'exemple à l'annexe Format CSV
+- doc : ajouter CSV anonymisés d'exemple à l'annexe Format CSV
+- mc2_db_to_csv : modifier l'option --type_doc pour pouvoir filter plusieurs type de document 
 
 
 Annexe - Arborescence

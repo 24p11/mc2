@@ -8,13 +8,12 @@ use Doctrine\DBAL\DriverManager;
  */
 class PatientRepository{
 
-    private $db = null;
-    private $logger;
-    
-    private $patient_table = null;
-
     const DEFAULT_PATIENT_TABLE = "mcdsp_patient";
     const PATIENT_COLUMNS = "patient_id, ipp, nom, prenom, ddn, sexe, created, modified, version"; // = *
+
+    private $db = null;
+    private $logger;
+    private $patient_table = null;
 
     public function get_patient_table(){
         return ($this->patient_table === null) ? self::DEFAULT_PATIENT_TABLE : $this->patient_table;

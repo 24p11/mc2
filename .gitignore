@@ -1,4 +1,5 @@
 .vscode/*
 /config/*.yml
+/data/
 /vendor/
 /log/

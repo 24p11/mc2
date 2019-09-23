@@ -41,7 +41,7 @@ class CSVWriter{
         $csv_file = @fopen($file_path, 'wb');
         // add BOM to force UTF-8 in Excel
         if($excel_friendly === true)
-            @fputs($csv_file, $bom =(chr(0xEF).chr(0xBB).chr(0xBF)));
+            @fputs($csv_file, $bom = (chr(0xEF).chr(0xBB).chr(0xBF)));
 
         $lines = $csv->lines;
         $count_lines = count($lines);
@@ -65,7 +65,6 @@ class CSVWriter{
                     $clean_string = str_replace("\r\n"," ",$val);
                     $clean_string = str_replace("\r"," ",$clean_string);
                     if($this->options->remove_html === true){
-                        // $clean_string = htmlentities($clean_string, ENT_QUOTES, 'UTF-8');
                         $clean_string = strip_tags($clean_string);
                     }
                     $clean_line[$key] = $clean_string;

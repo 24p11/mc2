@@ -101,7 +101,7 @@ $patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = true;
 $csv_options = new CSVOption($excel_friendly);
 $csv_writer = new CSVWriter($csv_options,$logger);
-$mc_extracter = new MCExtractManager(MCExtractManager::SRC_MIDDLECARE,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo,$csv_writer, $logger);
+$mc_extracter = new MCExtractManager(MCExtractManager::SRC_MIDDLECARE,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo,$csv_writer,$logger);
 
 if(isset($options['dict'])){
     // ----- DSP List
@@ -120,7 +120,7 @@ if(isset($options['dict'])){
         $date_debut = new DateTime($options['deb']);
         $date_fin = new DateTime($options['fin']);
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $mc_extracter->import_dsp_data($dsp_id, $date_debut, $date_fin,$item_names);
+        $mc_extracter->import_dsp_data($dsp_id,$date_debut,$date_fin,$item_names);
     }else{
         $logger->addInfo("Unknown parameters",array('options' => $options));
     }

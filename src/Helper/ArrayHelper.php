@@ -30,10 +30,9 @@ class ArrayHelper{
 	public static function reorderColumns(array $input, array $ordered_column_names){
 		$ordered_array = array();
 		foreach($ordered_column_names as $k){
-			if(array_key_exists($k, $input))
-				$ordered_array[$k] = $input[$k];
-			else 
-				$ordered_array[$k] = '';
+			$ordered_array[$k] = array_key_exists($k, $input)
+				? $input[$k]
+				: '';
 		}
 		return $ordered_array;
 	}

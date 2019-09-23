@@ -10,6 +10,7 @@ class ItemValue{
     public $page_nom;
     public $var;
     public $val;
+    
     public $created;
     public $modified;
     public $version;

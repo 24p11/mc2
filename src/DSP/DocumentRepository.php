@@ -12,6 +12,12 @@ use Doctrine\DBAL\Connection;
  */
 class DocumentRepository{
 
+    const DEFAULT_DOCUMENT_TABLE = "mcdsp_document";
+    const DOCUMENT_COLUMNS = "nipro,patient_id,dossier_id,site,type,venue,patient_age,patient_poids,patient_taille,date_creation,date_modification,revision,extension,operateur,provisoire,categorie,service,created,modified,version,deleted";// = *
+
+    const DEFAULT_ITEM_VALUE_TABLE = "mcdsp_item_value";
+    const ITEM_VALUE_COLUMNS = "nipro,patient_id,dossier_id,site,page_nom,var,val,created,modified,version,deleted";// = *
+
     private $db = null;
     private $logger;
     private $site = null;
@@ -21,13 +27,6 @@ class DocumentRepository{
 
     public $base_url = '';
 
-    const DEFAULT_DOCUMENT_TABLE = "mcdsp_document";
-    // MAJ 2019-07-24 CS.CATEG, CS.CR_PROVISOIRE, IP.SERVICE (categorie,provisoire,service)
-    
-    const DOCUMENT_COLUMNS = "nipro,patient_id,dossier_id,site,type,venue,patient_age,patient_poids,patient_taille,date_creation,date_modification,revision,extension,operateur,provisoire,categorie,service,created,modified,version,deleted";// = *
-
-    const DEFAULT_ITEM_VALUE_TABLE = "mcdsp_item_value";
-    const ITEM_VALUE_COLUMNS = "nipro,patient_id,dossier_id,site,page_nom,var,val,created,modified,version,deleted";// = *
 
     public function get_document_table(){
         return ($this->document_table === null) ? self::DEFAULT_DOCUMENT_TABLE : $this->document_table;
@@ -298,7 +297,7 @@ class DocumentRepository{
             ? "" : "AND var in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
         $query_deleted_document = "UPDATE ".$this->get_document_table()." SET deleted = 1 WHERE site = :site AND nipro IN (:nipros)";
         $query_deleted_item_values = "UPDATE ".$this->get_item_value_table()." SET deleted = 1 WHERE site = :site AND nipro IN(:nipros) {$query_items}";
-        $values = array('site' => $this->site,'nipros' => $nipros);
+        $values = array('site' => $this->site, 'nipros' => $nipros);
         $types = array('site' => PDO::PARAM_STR, 'nipros' => Connection::PARAM_INT_ARRAY);
         $stmt = $this->db->executeQuery($query_deleted_document,$values,$types);
         $stmt = $this->db->executeQuery($query_deleted_item_values,$values,$types);

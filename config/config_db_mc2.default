@@ -18,4 +18,4 @@ tables:
     document: 'mcdsp_document'
     item_value: 'mcdsp_item_value'
     patient: 'mcdsp_patient'
-mc_base_url: 'http://middle_care_path_to_documents'
+doc_base_url: 'http://path_to_documents'

@@ -40,11 +40,11 @@ class DocumentRepository{
      * @param string $params DSN DSP (MySQL)
      * @param Monolog\Logger $logger
      */
-    public function __construct($params,$logger,$site = null){
+    public function __construct($params,$logger,$site,$doc_base_url){
         $this->db = DriverManager::getConnection($params['doctrine']['dbal']);
         $this->document_table = $params['tables']['document'];
         $this->item_value_table = $params['tables']['item_value'];
-        $this->base_url = $params['mc_base_url'];
+        $this->base_url = $doc_base_url;
         $this->logger = $logger;
         $this->site = $site;
     }
@@ -133,8 +133,8 @@ class DocumentRepository{
         $stmt->bindValue("site", $this->site);
         $stmt->execute();
         
-        $documents = array();
         // for every documents fetch all item_values
+        $documents = array();
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
             $document = new Document($this->base_url,$row);
             $document->item_values = $this->findItemValuesByNipro($document->id,$item_names);
@@ -191,7 +191,6 @@ class DocumentRepository{
         $query = "INSERT INTO ".$this->get_document_table()." (".self::DOCUMENT_COLUMNS.") 
             VALUES(:document_id, :patient_id, :dossier_id, :site, :type, :venue, :patient_age, :patient_poids, :patient_taille, :date_creation, :date_modification, :revision, :extension, :operateur, NOW(), NOW(), 0, 0)
             ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), provisoire = VALUES(provisoire), categorie = VALUES(categorie), service = VALUES(service), modified = VALUES(modified), version = version + 1, deleted = 0";
-            
         $stmt = $this->db->prepare($query);
         $stmt->bindValue('document_id', $document->id);
         $stmt->bindValue('patient_id', $document->patient_id);

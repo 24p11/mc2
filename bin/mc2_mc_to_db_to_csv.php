@@ -2,12 +2,9 @@
 <?php
 /** 
  * ================================================================================================================
- * Extract data from local database to spreadsheets files (CSV)
+ * Extract data from mc database to mc2 database to spreadsheets files (CSV)
  * @author jvigneron
  * ================================================================================================================
- * HISTORY
- * > php .\mc2_db_to_csv.php --site sls --dsp DSP22 --deb 20180101 --fin 20190715 --type_doc 'CRH hémato-oncologie CART' --excel --period P2Y
- * > php .\mc2_db_to_csv.php --site sls --dsp DSP96 --deb 20180101 --fin 20190715 --excel --period P2Y
  */
 require_once __DIR__.'/../vendor/autoload.php';
 use SBIM\Core\Helper\DateHelper;
@@ -68,7 +65,7 @@ $period = isset($options['period']) ? $options['period'] : 'P1M';
 
 $mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
 $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
-$document_repo = new DocumentRepository($config_db_dsp,$logger,$site);
+$document_repo = new DocumentRepository($config_db_dsp,$logger,$site,$config_db_middlecare[$site]['doc_base_url']);
 $patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = isset($options['excel']);
 $nohtml = isset($options['nohtml']);

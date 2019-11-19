@@ -33,7 +33,6 @@
  * > php mc2_mc_to_csv.php --site sls --dsp DSP96 --deb 20190101 --fin 20190201 --items "VAR1 VAR2 VAR83 VAR84"
  * -----------------------------------------------------------------------------------------
  */
- 
 require_once __DIR__.'/../vendor/autoload.php';
 use SBIM\Core\Log\LoggerFactory;
 use SBIM\Core\Helper\DateHelper;
@@ -102,7 +101,7 @@ $site = isset($options["site"]) ? $options["site"] : 'sls';
 
 $mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
 $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
-$document_repo = new DocumentRepository($config_db_dsp,$logger,$site);
+$document_repo = new DocumentRepository($config_db_dsp,$logger,$site,$config_db_middlecare[$site]['doc_base_url']);
 $patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = isset($options['excel']);
 $nohtml = isset($options['nohtml']);

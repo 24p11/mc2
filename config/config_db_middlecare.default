@@ -12,6 +12,7 @@ sls:
             user: 'user'
             password: 'password'
             charset: 'AL32UTF8'
+    doc_base_url: 'http://middle_care_path_to_documents'
 lrb:
     doctrine:
         dbal:
@@ -22,3 +23,4 @@ lrb:
             user: 'user'
             password: 'password'
             charset: 'AL32UTF8'
+    doc_base_url: 'http://middle_care_path_to_documents'

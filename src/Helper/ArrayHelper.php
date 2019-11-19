@@ -2,6 +2,9 @@
 namespace SBIM\Core\Helper;
 class ArrayHelper{
 
+	public static function issetor($var,$default = ""){
+		return isset($var) ? $var : $default;
+	}
 	public static function filter(array $array_to_filter, array $keys_to_keep = null, array $where = null, $not = false){
 		$result = array();
 		foreach($array_to_filter as $row) {

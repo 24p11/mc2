@@ -71,9 +71,9 @@ class Document{
             $document->patient_id = $mc_data['NIP'];
             $document->type = $mc_data['TYPE_EXAM'];
             $document->venue = $mc_data['VENUE'];
-            $document->patient_age = $mc_data['AGE'];
-            $document->patient_poids = $mc_data['POIDS'];
-            $document->patient_taille = $mc_data['TAILLE'];
+            $document->patient_age = isset($mc_data['AGE']) ? $mc_data['AGE'] : '';
+            $document->patient_poids = isset($mc_data['POIDS']) ? $mc_data['POIDS'] : '';
+            $document->patient_taille = isset($mc_data['TAILLE']) ? $mc_data['TAILLE'] : '';
             $document->date_creation = new DateTime($mc_data['DATE_EXAM']);
             $document->date_modification = new DateTime($mc_data['DATE_MAJ']);
             $document->operateur = $mc_data['OPER'];

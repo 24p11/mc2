@@ -573,7 +573,7 @@ final class MCExtractManager{
 		$patient_ids = array();
 		
 		foreach ($mc_documents as $mc_document){
-			$documents[] = Document::createFromMCData($this->document_repository->base_url,$this->site,$dsp_id,$mc_document);
+			$documents[] = Document::createFromMCData($this->mc_repository->getDocumentBaseURL(),$this->site,$dsp_id,$mc_document);
 			foreach($items as $item){
 				$item_value = ItemValue::createFromMCData($dsp_id,$item,$mc_document);
 				if(!empty($item_value->val))
@@ -682,9 +682,8 @@ final class MCExtractManager{
 				$var_name = RCDictionnary::clean_variable_name($rc_dictionnary_item[RCDictionnary::FIELD_NAME_INDEX]);
 				switch($rc_dictionnary_item[RCDictionnary::FIELD_TYPE_INDEX]){
 					case 'dropdown': 
-						// TEST suppression de la valeur (= '') quand valeur vide
+						// suppression de la valeur (= '') quand valeur vide
 						$new_row[$var_name] = empty($value) ? '' : RCDictionnary::get_index_from_value($value, $rc_dictionnary_item[RCDictionnary::CHOICES_INDEX]);	
-						//$new_row[$var_name] = RCDictionnary::get_index_from_value($value, $rc_dictionnary_item[RCDictionnary::CHOICES_INDEX]);	
 						break;
 					case 'checkbox': 
 						// pour une  liste donnée ex : var_name = 'surlacommode', value ='OUI#NON'
@@ -694,15 +693,13 @@ final class MCExtractManager{
 						$values = explode('#',$value);
 						// pour chacunes des valeurs possibles, ajouter un element au tableau de cle 'surlacommode___x' et y mettre la valeur 1 ou 0 si le tableau des valeurs possible possede in index === x
 						foreach ($choices as $k => $v){
-							// TEST suppression de la valeur (= '') quand case non coché
+							// suppression de la valeur (= '') quand case non cochée
 							$new_row[$var_name."___".$k] = !empty($v) && in_array($v, $values) ? 1 : 0;
-							// $new_row[$var_name."___".$k] = in_array($v, $values) ? 1 : 0;
 						}
 						break;
 					case 'yesno': 
-						// TEST suppression de la valeur (= '') quand case non coché
+						// suppression de la valeur (= '') quand case non coché
 						$new_row[$var_name] = $value === "on" ? 1 : '';
-						// $new_row[$var_name] = $value === "on" ? 1 : 0;
 						break;
 					default : 
 						$new_row[$var_name] = $value;

@@ -1,4 +1,14 @@
 {
+    "name": "24p11/mc2",
+    "type": "library",
+    "description": "ETL MiddleCare",
+    "keywords": [
+        "24p11",
+        "mc2",
+        "middlecare"
+    ],
+    "homepage": "https://github.com/24p11/mc2",
+    "license": "MIT",
     "config": {
         "platform": {
             "php" : "5.3.3"

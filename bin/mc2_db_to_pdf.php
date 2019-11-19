@@ -2,7 +2,7 @@
 <?php
 /** 
  * ================================================================================================================
- * Extract documents from local database and download corresponding PDF files.
+ * Extract documents from mc2 database and download corresponding PDF files.
  * @author jvigneron
  * ================================================================================================================
  * HISTORY
@@ -44,7 +44,7 @@ $site = isset($options["site"]) ? $options["site"] : 'sls';
 
 $mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
 $dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
-$document_repo = new DocumentRepository($config_db_dsp,$logger,$site);
+$document_repo = new DocumentRepository($config_db_dsp,$logger,$site,$config_db_middlecare[$site]['doc_base_url']);
 $patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = isset($options['excel']);
 $csv_options = new CSVOption($excel_friendly);

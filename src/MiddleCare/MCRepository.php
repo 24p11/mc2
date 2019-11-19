@@ -196,6 +196,24 @@ class MCRepository{
         return $result;
     }
 
+    public function getDSPfromIPP($ipps){
+        $dsps = [];
+        $starting_with = ["DCS","DDS","DSP","SER"];
+        $query_in_ipps = "'".join("','",$ipps)."'";
+        $query = "SELECT *
+            FROM middlecare.INCLUSION INC
+            LEFT JOIN middlecare.INCLUSION_ETB ETB ON INC.NIP = ETB.INTNIP
+            WHERE ETB.ID_PATIENT_ETB IN ({$query_in_ipps})";
+        $rows = $this->executeQuery($query);
+        foreach($rows as $row){
+            foreach($row as $key => $value){
+                if (in_array(substr($key,0,3),$starting_with) && !in_array($key,$dsps) && $value === "1")
+                    $dsps[] = $key;
+            }
+        }
+        return $dsps;
+    }
+
     /**
      * Retourne l'ensemble des IPP des patients dans un DSP et une période donnée.
      * 
@@ -267,12 +285,44 @@ class MCRepository{
             AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')
             ORDER BY IP.NIP";
 
-        $this->logger->addDebug("query_get_dsp", array('query' => $query_get_dsp));
+        // $this->logger->addDebug("query_get_dsp", array('query' => $query_get_dsp));
         $result = $this->executeQuery($query_get_dsp);
         $this->logger->addInfo("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'row_count' => count($result)));
 		return $result;
     }
     
+    public function getDocumentFromNDA(array $ndas){
+        $query_in_ndas = "'".join("','",$ndas)."'";
+        $query = "SELECT CS.CDPROD AS DSP_ID,
+            CS.INTNIPRO AS NIPRO, 
+            INCLETB.ID_PATIENT_ETB AS IPP, 
+            INCL.NIP, 
+            INCL.NOM, 
+            INCL.PNOM AS PRENOM, 
+            to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
+            INCL.SEXE,
+            CS.LIBEXAM AS TYPE_EXAM,
+            CS.NUM_VENU AS VENUE, 
+            to_char(CS.DATEXAM,'YYYY-MM-DD') AS DATE_EXAM, 
+            to_char(CS.DATEPUB,'YYYY-MM-DD') AS DATE_MAJ, 
+            CS.AUTEUR AS OPER,
+            CS.REVISION, 
+            CS.EXTENSION, 
+            CS.CATEG, 
+            CS.CR_PROVISOIRE, 
+            CS.AUTORISE as SERVICE
+            FROM MIDDLECARE.INCLUSION INCL
+            LEFT JOIN MIDDLECARE.INCLUSION_ETB INCLETB ON INCLETB.INTNIP = INCL.INTNIP
+            LEFT JOIN MIDDLECARE.CONSULTATION CS ON CS.INTNIP = INCL.INTNIP
+            WHERE CS.NUM_VENU IN({$query_in_ndas})
+            ORDER BY INCL.NIP";
+
+        // $this->logger->addDebug("getDocumentFromNDA", array('query' => $query));
+        $result = $this->executeQuery($query);
+        $this->logger->addInfo("Retrieved DSP data by NDA", array('row_count' => count($result)));
+		return $result;
+    }
+
     /**
      * YAGNI!
      * Retourne les données d'un DSP pour une liste d'IPP.
@@ -392,7 +442,6 @@ class MCRepository{
 					$item_not_null[] = $key;
 			}
         }
-        
         arsort($item_not_null_count);
 		return array(
 			'ALL_ITEM_COUNT' => $item_not_null_count,

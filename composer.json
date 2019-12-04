@@ -15,8 +15,8 @@
         }
     },
     "require": {
-        "monolog/monolog": "1.*",
-	    "doctrine/orm": "2.4.*",
+        "monolog/monolog": "*",
+	    "doctrine/orm": "*",
 	    "symfony/yaml": "*"
     },
     "autoload": {

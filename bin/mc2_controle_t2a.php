@@ -55,7 +55,6 @@ $dl_all_revision = false;
 $controles = isset($options['in']) 
     ? open_csv(__DIR__."/".$options['in'])
     : open_csv(__DIR__."/../data/controle_t2a_2019_clean.csv");
-    //: open_csv(__DIR__."/../data/controle_t2a_2019_clean_light.csv");
 
 $ndas = array_column($controles, 'nas');
 

@@ -51,21 +51,21 @@ $patient_repo = new PatientRepository($config_db_dsp,$logger);
 switch(true){
     case isset($options['check']) : 
         // check connexions DB MiddleCare + Repositories (DB MySQL)
-        $logger->AddInfo("connection MiddleCare : ". ($mc_repo->checkConnection() ? "successfull" : "failed"));
-        $logger->AddInfo("connection DossierRepository  : ". ($dossier_repo->checkConnection() ? "successfull" : "failed"));
-        $logger->AddInfo("connection DocumentRepository : ". ($document_repo->checkConnection() ? "successfull" : "failed"));
-        $logger->AddInfo("connection PatientRepository  : ". ($patient_repo->checkConnection() ? "successfull" : "failed"));
+        $logger->info("connection MiddleCare : ". ($mc_repo->checkConnection() ? "successfull" : "failed"));
+        $logger->info("connection DossierRepository  : ". ($dossier_repo->checkConnection() ? "successfull" : "failed"));
+        $logger->info("connection DocumentRepository : ". ($document_repo->checkConnection() ? "successfull" : "failed"));
+        $logger->info("connection PatientRepository  : ". ($patient_repo->checkConnection() ? "successfull" : "failed"));
         break;
     case isset($options['install']) : 
-        $logger->AddInfo("creating MySQL tables");
-        $logger->AddInfo("creation table ".$patient_repo->getCreateTablePatientQuery()." : ". ($patient_repo->createTablePatient() ? "successful" : "failed"));
-        $logger->AddInfo("creation table ".$document_repo->getCreateTableItemValueQuery()." : ". ($document_repo->createTableItemValue() ? "successful" : "failed"));
-        $logger->AddInfo("creation table ".$document_repo->getCreateTableDocumentQuery()." : ". ($document_repo->createTableDocument() ? "successful" : "failed"));
-        $logger->AddInfo("creation table ".$dossier_repo->getCreateTableItemQuery()." : ". ($dossier_repo->createTableItem() ? "successful" : "failed"));
-        $logger->AddInfo("creation table ".$dossier_repo->getCreateTableDossierQuery()." : ". ($dossier_repo->createTableDossier() ? "successful" : "failed"));
+        $logger->info("creating MySQL tables");
+        $logger->info("creation table ".$patient_repo->getCreateTablePatientQuery()." : ". ($patient_repo->createTablePatient() ? "successful" : "failed"));
+        $logger->info("creation table ".$document_repo->getCreateTableItemValueQuery()." : ". ($document_repo->createTableItemValue() ? "successful" : "failed"));
+        $logger->info("creation table ".$document_repo->getCreateTableDocumentQuery()." : ". ($document_repo->createTableDocument() ? "successful" : "failed"));
+        $logger->info("creation table ".$dossier_repo->getCreateTableItemQuery()." : ". ($dossier_repo->createTableItem() ? "successful" : "failed"));
+        $logger->info("creation table ".$dossier_repo->getCreateTableDossierQuery()." : ". ($dossier_repo->createTableDossier() ? "successful" : "failed"));
         break;
     case isset($options['yuml']) : 
-        $logger->AddInfo("generating MySQL schema diagram");
+        $logger->info("generating MySQL schema diagram");
 
         // get current MySQL DB schema
         $schema = '';
@@ -92,7 +92,7 @@ switch(true){
         file_put_contents(__DIR__."/../docs/schemas/{$file_name}",$md);
         break;
     default :
-        $logger->addInfo("Parametres inconnus");
+        $logger->info("Parametres inconnus");
 }
 
-$logger->addInfo("-------- Finished after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->info("-------- Finished after ".$now->diff(new DateTime())->format('%H:%I:%S'));

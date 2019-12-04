@@ -36,7 +36,7 @@ class MCRepository{
                 return true;
         } 
         catch (\Exception $e) {
-            $this->logger>addError("Can't connect to MCRepository DB", array('exception' => $e));
+            $this->logger->error("Can't connect to MCRepository DB", array('exception' => $e));
             return false;
         }
     }
@@ -230,7 +230,7 @@ class MCRepository{
             WHERE IP.DT_PRO >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY')
             AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')";
         $result = array_column($this->executeQuery($query),'IPP');
-        $this->logger->addInfo("Retrieved all IPPs", array('dsp_id' => $dsp_id, 'row_count' => count($result)));
+        $this->logger->info("Retrieved all IPPs", array('dsp_id' => $dsp_id, 'row_count' => count($result)));
         return $result;
     }
     
@@ -285,9 +285,9 @@ class MCRepository{
             AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')
             ORDER BY IP.NIP";
 
-        // $this->logger->addDebug("query_get_dsp", array('query' => $query_get_dsp));
+        // $this->logger->debug("query_get_dsp", array('query' => $query_get_dsp));
         $result = $this->executeQuery($query_get_dsp);
-        $this->logger->addInfo("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'row_count' => count($result)));
+        $this->logger->info("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'row_count' => count($result)));
 		return $result;
     }
     
@@ -317,9 +317,9 @@ class MCRepository{
             WHERE CS.NUM_VENU IN({$query_in_ndas})
             ORDER BY INCL.NIP";
 
-        // $this->logger->addDebug("getDocumentFromNDA", array('query' => $query));
+        // $this->logger->debug("getDocumentFromNDA", array('query' => $query));
         $result = $this->executeQuery($query);
-        $this->logger->addInfo("Retrieved DSP data by NDA", array('row_count' => count($result)));
+        $this->logger->info("Retrieved DSP data by NDA", array('row_count' => count($result)));
 		return $result;
     }
 
@@ -375,7 +375,7 @@ class MCRepository{
             ORDER BY INCLETB.ID_PATIENT_ETB, IP.DT_PRO";
 
         $result = array('dsp_id' => $dsp_id, 'items' => $items, 'data' => $this->executeQuery($query_get_data));
-        $this->logger->addInfo("Retrieved DSP data of IPPs={$query_in_ipps} for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id,'IPPs' => $query_in_ipps, 'page_name' => $page_name, 'row_count' => count($result['data'])));
+        $this->logger->info("Retrieved DSP data of IPPs={$query_in_ipps} for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id,'IPPs' => $query_in_ipps, 'page_name' => $page_name, 'row_count' => count($result['data'])));
 		return $result;
     }
 

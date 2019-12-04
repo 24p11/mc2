@@ -11,6 +11,6 @@ $log->pushHandler(new StreamHandler('your.log', Logger::WARNING));
 
 // add records to the log
 $log->addInfo('Foo');
-$log->addWarning('Bar');
-$log->addError('ERRRRR');
+$log->warning('Bar');
+$log->error('ERRRRR');
 $log->addAlert('ALERTE!');

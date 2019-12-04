@@ -55,7 +55,7 @@ class DocumentRepository{
                 return true;
         } 
         catch (\Exception $e) {
-            $this->logger>addError("Can't connect to DocumentRepository DB", array('exception' => $e));
+            $this->logger->error("Can't connect to DocumentRepository DB", array('exception' => $e));
             return false;
         }
     }

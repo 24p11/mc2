@@ -11,7 +11,7 @@
     "license": "MIT",
     "config": {
         "platform": {
-            "php" : "5.3.3"
+            "php" : "7.3.5"
         }
     },
     "require": {

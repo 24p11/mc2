@@ -35,7 +35,7 @@ class PatientRepository{
                 return true;
         } 
         catch (\Exception $e) {
-            $this->logger>addError("Can't connect to PatientRepository DB", array('exception' => $e));
+            $this->logger->error("Can't connect to PatientRepository DB", array('exception' => $e));
             return false;
         }
     }

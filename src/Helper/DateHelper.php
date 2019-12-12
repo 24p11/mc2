@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\Core\Helper;
+namespace MC2\Core\Helper;
 class DateHelper{
     const MYSQL_FORMAT = 'Y-m-d H:i:s';
     const SHORT_MYSQL_FORMAT = 'Y-m-d';

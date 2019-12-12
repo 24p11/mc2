@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\DSP;
+namespace MC2\DSP;
 use \PDO;
 use Doctrine\DBAL\DriverManager;
 /**
@@ -29,15 +29,15 @@ class DossierRepository{
     private $item_table = null;
     private $page_table = null;
 
-    public function get_dossier_table(){
+    public function getDossierTable(){
         return ($this->dossier_table === null) ? self::DEFAULT_DOSSIER_TABLE : $this->dossier_table;
     }
 
-    public function get_item_table(){
+    public function getItemTable(){
         return ($this->item_table === null) ? self::DEFAULT_ITEM_TABLE : $this->item_table;
     }
 
-    public function get_page_table(){
+    public function getPageTable(){
         return ($this->page_table === null) ? self::DEFAULT_PAGE_TABLE : $this->page_table;
     }
 
@@ -68,7 +68,7 @@ class DossierRepository{
     // -------- Query
 
     public function findDossier($dossier_id){
-        $query = "SELECT ".self::DOSSIER_COLUMNS." FROM ".$this->get_dossier_table()." 
+        $query = "SELECT ".self::DOSSIER_COLUMNS." FROM ".$this->getDossierTable()." 
             WHERE dossier_id = :dossier_id 
             AND site = :site
             ORDER BY dossier_id";
@@ -83,7 +83,7 @@ class DossierRepository{
     }
 
     public function findAllDossier(){
-        $query = "SELECT ".self::DOSSIER_COLUMNS." FROM ".$this->get_dossier_table()."
+        $query = "SELECT ".self::DOSSIER_COLUMNS." FROM ".$this->getDossierTable()."
             WHERE site = :site
             ORDER BY dossier_id";
         $stmt = $this->db->prepare($query);
@@ -99,7 +99,7 @@ class DossierRepository{
         $query_document_type = ($document_types === null || count($document_types) < 1) 
             ? "" : "AND document_type in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
         $query = "SELECT ".self::PAGE_COLUMNS." 
-            FROM ".$this->get_page_table()." 
+            FROM ".$this->getPageTable()." 
             WHERE dossier_id = :dossier_id 
             AND site = :site
             {$query_document_type}
@@ -119,7 +119,7 @@ class DossierRepository{
         $query_items = ($item_names === null || count($item_names) < 1) 
             ? "" : "AND item_id in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
         $query = "SELECT ".self::ITEM_COLUMNS." 
-            FROM ".$this->get_item_table()." 
+            FROM ".$this->getItemTable()." 
             WHERE dossier_id = :dossier_id 
             AND site = :site
             {$query_items}
@@ -137,7 +137,7 @@ class DossierRepository{
 
     public function findItemByDossierIdAndPage($dossier_id,$page_nom){
         $query = "SELECT ".self::ITEM_COLUMNS." 
-            FROM ".$this->get_item_table()." 
+            FROM ".$this->getItemTable()." 
             WHERE dossier_id = :dossier_id 
             AND site = :site
             AND page_libelle = :page_nom
@@ -161,7 +161,7 @@ class DossierRepository{
             $query_fiches = "AND page_nom in(".join(',',array_map(function($v){ return "'".$v."'"; },$fiches)).")";
             
             $query = "SELECT ".self::ITEM_COLUMNS." 
-                FROM ".$this->get_item_table()." 
+                FROM ".$this->getItemTable()." 
                 WHERE dossier_id = :dossier_id 
                 AND site = :site
                 {$query_fiches}
@@ -182,7 +182,7 @@ class DossierRepository{
     // -------- Command
 
     public function upsertDossier($dossier){
-        $query = "INSERT INTO ".$this->get_dossier_table()." (".self::DOSSIER_COLUMNS.") 
+        $query = "INSERT INTO ".$this->getDossierTable()." (".self::DOSSIER_COLUMNS.") 
             VALUES(:dossier_id, :site, :nom, :libelle, :uhs, NOW(), NOW(), 0)
             ON DUPLICATE KEY UPDATE nom = VALUES(nom), libelle = VALUES(libelle), uhs = VALUES(uhs), modified = VALUES(modified), version = version + 1";
         $stmt = $this->db->prepare($query);
@@ -196,12 +196,12 @@ class DossierRepository{
     }
 
     public function deleteDossier($id){
-        return $conn->delete($this->get_dossier_table(), array('dossier_id' => $id));
+        return $conn->delete($this->getDossierTable(), array('dossier_id' => $id));
     }
 
     //const PAGE_COLUMNS = "type_document, dossier_id, site, page_libelle, page_code, page_ordre, created, modified, version"; // = *
     public function upsertPage($page){
-        $query = "INSERT INTO ".$this->get_page_table()." (".self::PAGE_COLUMNS.") 
+        $query = "INSERT INTO ".$this->getPageTable()." (".self::PAGE_COLUMNS.") 
             VALUES(:type_document, :dossier_id, :site, :page_libelle, :page_code, :page_ordre, NOW(), NOW(), 0)
             ON DUPLICATE KEY UPDATE page_code = VALUES(page_code), page_ordre = VALUES(page_ordre), modified = VALUES(modified), version = version + 1";
         $stmt = $this->db->prepare($query);
@@ -216,7 +216,7 @@ class DossierRepository{
     }
     
     public function upsertItem($item){
-        $query = "INSERT INTO ".$this->get_item_table()." (".self::ITEM_COLUMNS.") 
+        $query = "INSERT INTO ".$this->getItemTable()." (".self::ITEM_COLUMNS.") 
             VALUES(:item_id, :dossier_id, :site, :type, :mctype, :ligne, :libelle, :libelle_bloc, :libelle_secondaire, :detail, :type_controle, :formule, :options, :list_nom, :list_values, :page_nom, :page_libelle, :bloc_no, :bloc_libelle, NOW(), NOW(), 0)
             ON DUPLICATE KEY UPDATE type = VALUES(type), mctype = VALUES(mctype), ligne = VALUES(ligne), libelle = VALUES(libelle), libelle_bloc = VALUES(libelle_bloc), libelle_secondaire = VALUES(libelle_secondaire), detail = VALUES(detail), type_controle = VALUES(type_controle), formule = VALUES(formule), options = VALUES(options), list_nom = VALUES(list_nom), list_values = VALUES(list_values), dossier_id = VALUES(dossier_id), page_nom = VALUES(page_nom), page_libelle = VALUES(page_libelle), bloc_no = VALUES(bloc_no), bloc_libelle = VALUES(bloc_libelle), modified = VALUES(modified), version = version + 1";
         $stmt = $this->db->prepare($query);
@@ -244,13 +244,13 @@ class DossierRepository{
     }
 
     public function deleteItem($id){
-        return $conn->delete($this->get_item_table(), array('item_id' => $id));
+        return $conn->delete($this->getItemTable(), array('item_id' => $id));
     }
 
     // -------- Table Creation
 
     public function getCreateTableDossierQuery(){
-        $query = "CREATE TABLE IF NOT EXISTS ".$this->get_dossier_table()." (
+        $query = "CREATE TABLE IF NOT EXISTS ".$this->getDossierTable()." (
             `dossier_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             `site` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `nom` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -266,7 +266,7 @@ class DossierRepository{
     }
 
     public function getCreateTableItemQuery(){
-        $query = "CREATE TABLE IF NOT EXISTS ".$this->get_item_table()." (
+        $query = "CREATE TABLE IF NOT EXISTS ".$this->getItemTable()." (
             `item_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             `dossier_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             `site` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -295,7 +295,7 @@ class DossierRepository{
     }
 
     public function getCreateTablePageQuery(){
-        $query = "CREATE TABLE IF NOT EXISTS ".$this->get_page_table()."  (
+        $query = "CREATE TABLE IF NOT EXISTS ".$this->getPageTable()."  (
             `type_document` VARCHAR(255) NOT NULL ,
             `dossier_id` VARCHAR(255) NOT NULL ,
             `site` VARCHAR(255) NOT NULL ,

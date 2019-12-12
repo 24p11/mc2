@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\RedCap;
+namespace MC2\RedCap;
 class RCService{
 
 	private $input_folder;
@@ -20,7 +20,7 @@ class RCService{
     }
 
 	public function import_data_file($file_name, $overwrite = false){
-		$this->logger->addInfo("-------- RCAPI importing file $file_name");
+		$this->logger->info("-------- RCAPI importing file $file_name");
 		$data = array(
 			'token' => $this->api_token,
 			'content' => 'record',
@@ -34,7 +34,7 @@ class RCService{
 			'returnFormat' => 'json'
 		);
 		$data['data'] = file_get_contents($this->input_folder."/{$file_name}");
-		$this->logger->addInfo("RCAPI import file $file_name", array());//'data' => $data
+		$this->logger->info("RCAPI import file $file_name", array());//'data' => $data
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->api_url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

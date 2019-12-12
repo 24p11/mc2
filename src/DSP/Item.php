@@ -1,5 +1,5 @@
 <?php 
-namespace SBIM\DSP;
+namespace MC2\DSP;
 use \DateTime;
 class Item{
 

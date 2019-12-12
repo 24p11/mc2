@@ -7,18 +7,18 @@
  * ================================================================================================================
  */
 require_once __DIR__.'/../vendor/autoload.php';
-use SBIM\Core\Helper\DateHelper;
-use SBIM\Core\Helper\ReflectionHelper;
-use SBIM\Core\Log\LoggerFactory;
-use SBIM\MiddleCare\MCRepository;
-use SBIM\DSP\DossierRepository;
-use SBIM\DSP\Dossier;
-use SBIM\DSP\DocumentRepository;
-use SBIM\DSP\Document;
-use SBIM\DSP\ItemValue;
-use SBIM\DSP\PatientRepository;
-use SBIM\DSP\Patient;
-use SBIM\RedCap\RCInstrument;
+use MC2\Core\Helper\DateHelper;
+use MC2\Core\Helper\ReflectionHelper;
+use MC2\Core\Log\LoggerFactory;
+use MC2\MiddleCare\MCRepository;
+use MC2\DSP\DossierRepository;
+use MC2\DSP\Dossier;
+use MC2\DSP\DocumentRepository;
+use MC2\DSP\Document;
+use MC2\DSP\ItemValue;
+use MC2\DSP\PatientRepository;
+use MC2\DSP\Patient;
+use MC2\RedCap\RCInstrument;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');

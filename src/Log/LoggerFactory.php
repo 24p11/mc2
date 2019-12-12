@@ -1,6 +1,6 @@
 <?php
-namespace SBIM\Core\Log;
-use SBIM\Core\Helper\DateHelper;
+namespace MC2\Core\Log;
+use MC2\Core\Helper\DateHelper;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\RotatingFileHandler;

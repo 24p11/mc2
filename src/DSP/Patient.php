@@ -1,7 +1,7 @@
 <?php 
-namespace SBIM\DSP;
+namespace MC2\DSP;
 use \DateTime;
-use SBIM\Core\Helper\DateHelper;
+use MC2\Core\Helper\DateHelper;
 class Patient{
 
     public $id; // = NIP 

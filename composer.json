@@ -22,12 +22,12 @@
     "autoload": {
         "psr-4": {
             "": "src/",
-            "SBIM\\MiddleCare\\": "src/MiddleCare",
-            "SBIM\\DSP\\": "src/DSP",
-            "SBIM\\RedCap\\": "src/RedCap",
-            "SBIM\\Core\\Helper\\": "src/Helper",
-            "SBIM\\Core\\Log\\": "src/Log",
-            "SBIM\\Core\\CSV\\": "src/CSV"
+            "MC2\\MiddleCare\\": "src/MiddleCare",
+            "MC2\\DSP\\": "src/DSP",
+            "MC2\\RedCap\\": "src/RedCap",
+            "MC2\\Core\\Helper\\": "src/Helper",
+            "MC2\\Core\\Log\\": "src/Log",
+            "MC2\\Core\\CSV\\": "src/CSV"
         }
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\RedCap;
+namespace MC2\RedCap;
 class RCItem{
 
     // Variable / Field Name
@@ -57,18 +57,15 @@ class RCItem{
         $this->matrix_ranking = '';
         $this->annotation = '';
 
-        $rc_type = self::mctype_to_rctype($mc_item['MCTYPE'], $mc_item['OPTIONS'], $mc_item['LIST_VALUES']);
+        $rc_type = self::trancodeFromMCTypeToRCType($mc_item['MCTYPE'], $mc_item['OPTIONS'], $mc_item['LIST_VALUES']);
         $this->type = $rc_type['type'];
         $this->choices = $rc_type['choices'];
         $this->note = $rc_type['note'];
         $this->validation = $rc_type['validation'];
     }
 
-    public static function create_from_db_item($db_item,$section_header){
-    }
-
     // TODO lower case Variable names & Form name to remove warning in RC when importing DD
-    public function to_array(){
+    public function toArray(){
         return array(
             RCDictionnary::FIELD_NAME_INDEX => $this->id,
             RCDictionnary::FORM_NAME_INDEX => str_replace(' ','_',$this->form_name),
@@ -98,7 +95,7 @@ class RCItem{
 	 * @param string $mc_options 
 	 * @param string $liste_val
 	 */
-	private static function mctype_to_rctype($mc_type, $mc_options, $liste_val){
+	private static function trancodeFromMCTypeToRCType($mc_type, $mc_options, $liste_val){
 		$rc_type = array('type' => '', 'note' => '', 'validation' => '', 'choices' => '');
 		switch ($mc_type) {
 			case 'BAC':

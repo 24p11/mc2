@@ -10,7 +10,7 @@ $log = new Logger('name');
 $log->pushHandler(new StreamHandler('your.log', Logger::WARNING));
 
 // add records to the log
-$log->addInfo('Foo');
+$log->info('Foo');
 $log->warning('Bar');
 $log->error('ERRRRR');
 $log->addAlert('ALERTE!');

@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\Core\CSV;
+namespace MC2\Core\CSV;
 class CSVOption{
 
     // si true => CSV généré avec séparateur ; et valeur des cellules sous la forme ="valeur"

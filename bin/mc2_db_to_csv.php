@@ -10,20 +10,20 @@
  * > php .\mc2_db_to_csv.php --site sls --dsp DSP96 --deb 20180101 --fin 20190715 --excel --period P2Y
  */
 require_once __DIR__.'/../vendor/autoload.php';
-use SBIM\Core\Helper\DateHelper;
-use SBIM\Core\Log\LoggerFactory;
-use SBIM\Core\CSV\CSVWriter;
-use SBIM\Core\CSV\CSVOption;
-use SBIM\MiddleCare\MCRepository;
-use SBIM\MiddleCare\MCExtractManager;
-use SBIM\DSP\DossierRepository;
-use SBIM\DSP\Dossier;
-use SBIM\DSP\DocumentRepository;
-use SBIM\DSP\Document;
-use SBIM\DSP\ItemValue;
-use SBIM\DSP\PatientRepository;
-use SBIM\DSP\Patient;
-use SBIM\RedCap\RCInstrument;
+use MC2\Core\Helper\DateHelper;
+use MC2\Core\Log\LoggerFactory;
+use MC2\Core\CSV\CSVWriter;
+use MC2\Core\CSV\CSVOption;
+use MC2\MiddleCare\MCRepository;
+use MC2\MiddleCare\MCExtractManager;
+use MC2\DSP\DossierRepository;
+use MC2\DSP\Dossier;
+use MC2\DSP\DocumentRepository;
+use MC2\DSP\Document;
+use MC2\DSP\ItemValue;
+use MC2\DSP\PatientRepository;
+use MC2\DSP\Patient;
+use MC2\RedCap\RCInstrument;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');
@@ -93,13 +93,13 @@ $mc_extracter = new MCExtractManager(MCExtractManager::SRC_LOCAL_DB,$site,$mc_re
 if(isset($options['dict'])){
     // ----- DSP List
     if(!isset($options['dsp'])){
-        $mc_extracter->export_all_dsp_to_csv();
+        $mc_extracter->exportAllDSPMetadataToCSV();
     }
     // ----- DSP Dictionnary (Items / Pages)
     else{
         $dsp_id = $options['dsp'];
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $mc_extracter->export_dsp_dictionnary_to_csv($dsp_id,$item_names);
+        $mc_extracter->exportDSPDictionnaryToCSV($dsp_id,$item_names);
     }
 }else{
     // ----- Document / Item Value / Patient 
@@ -110,9 +110,9 @@ if(isset($options['dict'])){
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
         $page_name = isset($options["page"]) ? $options["page"] : null;
         $type_doc = isset($options["type_doc"]) ? $options["type_doc"] : null;
-        $mc_extracter->export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin,$item_names,$page_name,$type_doc,$period);
+        $mc_extracter->exportDSPDataToCSV($dsp_id, $date_debut, $date_fin,$item_names,$page_name,$type_doc,$period);
     }else{
-        $logger->addInfo("Unknown parameters",array('options' => $options));
+        $logger->info("Unknown parameters",array('options' => $options));
     }
 }
-$logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->info("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

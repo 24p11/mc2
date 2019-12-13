@@ -1,7 +1,7 @@
 <?php
-namespace SBIM\DSP;
+namespace MC2\DSP;
 use \PDO;
-use SBIM\Core\Helper\DateHelper;
+use MC2\Core\Helper\DateHelper;
 use Doctrine\DBAL\DriverManager;
 /**
  * Patient Repository
@@ -15,7 +15,7 @@ class PatientRepository{
     private $logger;
     private $patient_table = null;
 
-    public function get_patient_table(){
+    public function getPatientTable(){
         return ($this->patient_table === null) ? self::DEFAULT_PATIENT_TABLE : $this->patient_table;
     }
 
@@ -35,7 +35,7 @@ class PatientRepository{
                 return true;
         } 
         catch (\Exception $e) {
-            $this->logger>addError("Can't connect to PatientRepository DB", array('exception' => $e));
+            $this->logger->error("Can't connect to PatientRepository DB", array('exception' => $e));
             return false;
         }
     }
@@ -43,7 +43,7 @@ class PatientRepository{
     // -------- Query
 
     public function findPatient($patient_id){
-        $query = "SELECT ".self::PATIENT_COLUMNS." FROM ".$this->get_patient_table()." WHERE patient_id = :patient_id ORDER BY created DESC";
+        $query = "SELECT ".self::PATIENT_COLUMNS." FROM ".$this->getPatientTable()." WHERE patient_id = :patient_id ORDER BY created DESC";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue("patient_id", $patient_id);
         $stmt->execute();
@@ -54,7 +54,7 @@ class PatientRepository{
     }
 
     public function findPatientFromIPP($ipp){
-        $query = "SELECT ".self::PATIENT_COLUMNS." FROM ".$this->get_patient_table()." WHERE ipp = :ipp ORDER BY patient_id";
+        $query = "SELECT ".self::PATIENT_COLUMNS." FROM ".$this->getPatientTable()." WHERE ipp = :ipp ORDER BY patient_id";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue("ipp", $ipp);
         $stmt->execute();
@@ -65,7 +65,7 @@ class PatientRepository{
     }
 
     public function findAllPatient(){
-        $query = "SELECT ".self::PATIENT_COLUMNS." FROM ".$this->get_patient_table()." ORDER BY patient_id";
+        $query = "SELECT ".self::PATIENT_COLUMNS." FROM ".$this->getPatientTable()." ORDER BY patient_id";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         $result = array();
@@ -77,7 +77,7 @@ class PatientRepository{
     // -------- Command
       
     public function upsertPatient($patient){
-        $query = "INSERT INTO ".$this->get_patient_table()." (".self::PATIENT_COLUMNS.") VALUES(:patient_id, :ipp, :nom, :prenom, :ddn, :sexe, NOW(), NOW(), 0)
+        $query = "INSERT INTO ".$this->getPatientTable()." (".self::PATIENT_COLUMNS.") VALUES(:patient_id, :ipp, :nom, :prenom, :ddn, :sexe, NOW(), NOW(), 0)
         ON DUPLICATE KEY UPDATE nom = VALUES(nom), prenom = VALUES(prenom), ddn = VALUES(ddn), sexe = VALUES(sexe), modified = VALUES(modified), version = version + 1";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue("patient_id", $patient->id);
@@ -94,7 +94,7 @@ class PatientRepository{
         if(count($patients) === 0)
             return 0;
 
-        $query = "INSERT INTO ".$this->get_patient_table()." (".self::PATIENT_COLUMNS.") VALUES";
+        $query = "INSERT INTO ".$this->getPatientTable()." (".self::PATIENT_COLUMNS.") VALUES";
         $count_patient = count($patients);
         foreach($patients as $patient){
             $query .= "('"
@@ -115,13 +115,13 @@ class PatientRepository{
     }
     
     public function deletePatient($patient_id, $ipp){
-        return $conn->delete($this->get_patient_table(), array('patient_id' => $patient_id, 'ipp' => $ipp));
+        return $conn->delete($this->getPatientTable(), array('patient_id' => $patient_id, 'ipp' => $ipp));
     }
     
     // -------- Table Creation
 
     public function getCreateTablePatientQuery(){
-        $query = "CREATE TABLE IF NOT EXISTS ".$this->get_patient_table()." (
+        $query = "CREATE TABLE IF NOT EXISTS ".$this->getPatientTable()." (
             `patient_id` bigint(20) NOT NULL COMMENT 'NIP',
             `ipp` bigint(20) NOT NULL DEFAULT '0',
             `nom` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,

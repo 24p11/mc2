@@ -1,7 +1,7 @@
 <?php
-namespace SBIM\DSP;
+namespace MC2\DSP;
 use \PDO;
-use SBIM\Core\Helper\DateHelper;
+use MC2\Core\Helper\DateHelper;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Connection;
 /**
@@ -27,12 +27,11 @@ class DocumentRepository{
 
     public $base_url = '';
 
-
-    public function get_document_table(){
+    public function getDocumentTable(){
         return ($this->document_table === null) ? self::DEFAULT_DOCUMENT_TABLE : $this->document_table;
     }
 
-    public function get_item_value_table(){
+    public function getItemValueTable(){
         return ($this->item_value_table === null) ? self::DEFAULT_ITEM_VALUE_TABLE : $this->item_value_table;
     }
 
@@ -55,7 +54,7 @@ class DocumentRepository{
                 return true;
         } 
         catch (\Exception $e) {
-            $this->logger>addError("Can't connect to DocumentRepository DB", array('exception' => $e));
+            $this->logger->error("Can't connect to DocumentRepository DB", array('exception' => $e));
             return false;
         }
     }
@@ -63,7 +62,7 @@ class DocumentRepository{
     // -------- Query
 
     public function findDocument($nipro){
-        $query = "SELECT ".self::DOCUMENT_COLUMNS." FROM ".$this->get_document_table()." WHERE nipro = :nipro AND site = :site AND deleted = 0 ORDER BY nipro";
+        $query = "SELECT ".self::DOCUMENT_COLUMNS." FROM ".$this->getDocumentTable()." WHERE nipro = :nipro AND site = :site AND deleted = 0 ORDER BY nipro";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue("nipro", $nipro);
         $stmt->bindValue("site", $this->site);
@@ -75,7 +74,7 @@ class DocumentRepository{
     }
 
     public function findAllDocument(){
-        $query = "SELECT ".self::DOCUMENT_COLUMNS." FROM ".$this->get_document_table()." WHERE deleted = 0 AND site = :site ORDER BY nipro";
+        $query = "SELECT ".self::DOCUMENT_COLUMNS." FROM ".$this->getDocumentTable()." WHERE deleted = 0 AND site = :site ORDER BY nipro";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue("site", $this->site);
         $stmt->execute();
@@ -90,7 +89,7 @@ class DocumentRepository{
             ? "" : "AND patient_id in(".join(',',array_map(function($v){ return "'".$v."'"; },$patient_ids)).")";
 
         $query = "SELECT ".self::DOCUMENT_COLUMNS." 
-            FROM ".$this->get_document_table()." 
+            FROM ".$this->getDocumentTable()." 
             WHERE dossier_id = :dossier_id 
             AND deleted = 0 
             AND date_creation >= :date_debut
@@ -116,7 +115,7 @@ class DocumentRepository{
             ? "" : "AND patient_id in(".join(',',array_map(function($v){ return "'".$v."'"; },$patient_ids)).")";
         $query_type_doc = ($type_doc === null || empty($type_doc)) ? "" : "AND type = '".$type_doc."'";
         $query = "SELECT ".self::DOCUMENT_COLUMNS." 
-            FROM ".$this->get_document_table()." 
+            FROM ".$this->getDocumentTable()." 
             WHERE dossier_id = :dossier_id 
             AND deleted = 0 
             AND date_creation >= :date_debut
@@ -147,7 +146,7 @@ class DocumentRepository{
         $query_items = ($item_names === null || count($item_names) < 1) 
             ? "" : "AND var in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
         $query = "SELECT ".self::ITEM_VALUE_COLUMNS." 
-            FROM ".$this->get_item_value_table()." 
+            FROM ".$this->getItemValueTable()." 
             WHERE nipro = :nipro 
             AND deleted = 0 
             AND site = :site
@@ -165,7 +164,7 @@ class DocumentRepository{
     }
 
     public function findAllPatientId($dossier_id, $date_debut, $date_fin){
-        $query = "SELECT DISTINCT patient_id FROM ".$this->get_document_table()." 
+        $query = "SELECT DISTINCT patient_id FROM ".$this->getDocumentTable()." 
             WHERE dossier_id = :dossier_id 
             AND deleted = 0 
             AND date_creation >= :date_debut
@@ -188,7 +187,7 @@ class DocumentRepository{
     // -------- Command
 
     public function upsertDocument($document){
-        $query = "INSERT INTO ".$this->get_document_table()." (".self::DOCUMENT_COLUMNS.") 
+        $query = "INSERT INTO ".$this->getDocumentTable()." (".self::DOCUMENT_COLUMNS.") 
             VALUES(:document_id, :patient_id, :dossier_id, :site, :type, :venue, :patient_age, :patient_poids, :patient_taille, :date_creation, :date_modification, :revision, :extension, :operateur, NOW(), NOW(), 0, 0)
             ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), provisoire = VALUES(provisoire), categorie = VALUES(categorie), service = VALUES(service), modified = VALUES(modified), version = version + 1, deleted = 0";
         $stmt = $this->db->prepare($query);
@@ -217,7 +216,7 @@ class DocumentRepository{
         if(count($documents) === 0)
             return 0;
 
-        $query = "INSERT INTO ".$this->get_document_table()." (".self::DOCUMENT_COLUMNS.") VALUES";
+        $query = "INSERT INTO ".$this->getDocumentTable()." (".self::DOCUMENT_COLUMNS.") VALUES";
         $count_document = count($documents);
         foreach($documents as $document){
             $query .= "('"
@@ -250,7 +249,7 @@ class DocumentRepository{
     }
 
     public function upsertItemValue($item_value){
-        $query = "INSERT INTO ".$this->get_item_value_table()." (".self::ITEM_VALUE_COLUMNS.") 
+        $query = "INSERT INTO ".$this->getItemValueTable()." (".self::ITEM_VALUE_COLUMNS.") 
             VALUES(:item_value_id, :patient_id, :dossier_id, :site, :page_nom, :var, :val, NOW(), NOW(), 0, 0)
             ON DUPLICATE KEY UPDATE page_nom = VALUES(page_nom), var = VALUES(var), val = VALUES(val), modified = VALUES(modified), version = version + 1, deleted = 0";
         $stmt = $this->db->prepare($query); 
@@ -269,7 +268,7 @@ class DocumentRepository{
         if(count($item_values) === 0)
             return 0;
 
-        $query = "INSERT INTO ".$this->get_item_value_table()." (".self::ITEM_VALUE_COLUMNS.") VALUES";
+        $query = "INSERT INTO ".$this->getItemValueTable()." (".self::ITEM_VALUE_COLUMNS.") VALUES";
         $count_value = count($item_values);
         foreach($item_values as $item_value){
             $query .= "('"
@@ -294,8 +293,8 @@ class DocumentRepository{
     public function deleteDocumentsAndItemValues(array $nipros, array $item_names = null){
         $query_items = ($item_names === null || count($item_names) < 1) 
             ? "" : "AND var in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
-        $query_deleted_document = "UPDATE ".$this->get_document_table()." SET deleted = 1 WHERE site = :site AND nipro IN (:nipros)";
-        $query_deleted_item_values = "UPDATE ".$this->get_item_value_table()." SET deleted = 1 WHERE site = :site AND nipro IN(:nipros) {$query_items}";
+        $query_deleted_document = "UPDATE ".$this->getDocumentTable()." SET deleted = 1 WHERE site = :site AND nipro IN (:nipros)";
+        $query_deleted_item_values = "UPDATE ".$this->getItemValueTable()." SET deleted = 1 WHERE site = :site AND nipro IN(:nipros) {$query_items}";
         $values = array('site' => $this->site, 'nipros' => $nipros);
         $types = array('site' => PDO::PARAM_STR, 'nipros' => Connection::PARAM_INT_ARRAY);
         $stmt = $this->db->executeQuery($query_deleted_document,$values,$types);
@@ -305,7 +304,7 @@ class DocumentRepository{
     // -------- Table Creation
 
     public function getCreateTableDocumentQuery(){
-        $query = "CREATE TABLE IF NOT EXISTS ".$this->get_document_table()." (
+        $query = "CREATE TABLE IF NOT EXISTS ".$this->getDocumentTable()." (
             `nipro` bigint(20) NOT NULL,
             `patient_id` bigint(20) DEFAULT NULL,
             `dossier_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
@@ -336,7 +335,7 @@ class DocumentRepository{
     }
 
     public function getCreateTableItemValueQuery(){
-        $query = "CREATE TABLE IF NOT EXISTS ".$this->get_item_value_table()." (
+        $query = "CREATE TABLE IF NOT EXISTS ".$this->getItemValueTable()." (
             `nipro` bigint(20) NOT NULL,
             `patient_id` bigint(20) NOT NULL,
             `dossier_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,

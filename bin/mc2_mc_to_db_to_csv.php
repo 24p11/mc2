@@ -7,20 +7,20 @@
  * ================================================================================================================
  */
 require_once __DIR__.'/../vendor/autoload.php';
-use SBIM\Core\Helper\DateHelper;
-use SBIM\Core\Log\LoggerFactory;
-use SBIM\Core\CSV\CSVWriter;
-use SBIM\Core\CSV\CSVOption;
-use SBIM\MiddleCare\MCRepository;
-use SBIM\MiddleCare\MCExtractManager;
-use SBIM\DSP\DossierRepository;
-use SBIM\DSP\Dossier;
-use SBIM\DSP\DocumentRepository;
-use SBIM\DSP\Document;
-use SBIM\DSP\ItemValue;
-use SBIM\DSP\PatientRepository;
-use SBIM\DSP\Patient;
-use SBIM\RedCap\RCInstrument;
+use MC2\Core\Helper\DateHelper;
+use MC2\Core\Log\LoggerFactory;
+use MC2\Core\CSV\CSVWriter;
+use MC2\Core\CSV\CSVOption;
+use MC2\MiddleCare\MCRepository;
+use MC2\MiddleCare\MCExtractManager;
+use MC2\DSP\DossierRepository;
+use MC2\DSP\Dossier;
+use MC2\DSP\DocumentRepository;
+use MC2\DSP\Document;
+use MC2\DSP\ItemValue;
+use MC2\DSP\PatientRepository;
+use MC2\DSP\Patient;
+use MC2\RedCap\RCInstrument;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');
@@ -85,17 +85,17 @@ if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
     $type_doc = null;
 
     // ---- DSP Dictionnary
-    $mc_extracter->import_dsp_dictionnary($dsp_id);
-    $mc_extracter->export_dsp_dictionnary_to_csv($dsp_id,$item_names);
+    $mc_extracter->importDSPDictionnary($dsp_id);
+    $mc_extracter->exportDSPDictionnaryToCSV($dsp_id,$item_names);
     
     // ---- DSP Data
     $date_debut = new DateTime($options['deb']);
     $date_fin = new DateTime($options['fin']);
-    $mc_extracter->import_dsp_data($dsp_id,$date_debut,$date_fin,$item_names);
-    $mc_extracter->export_dsp_data_to_csv($dsp_id, $date_debut, $date_fin,$item_names,$page_name,$type_doc,$period);
+    $mc_extracter->importDSPData($dsp_id,$date_debut,$date_fin,$item_names);
+    $mc_extracter->exportDSPDataToCSV($dsp_id, $date_debut, $date_fin,$item_names,$page_name,$type_doc,$period);
 
     // TODO DELETE DSP DATA ?    
 }else{
-    $logger->addInfo("Unknown parameters",array('options' => $options));
+    $logger->info("Unknown parameters",array('options' => $options));
 }
-$logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->info("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

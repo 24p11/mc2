@@ -1,7 +1,7 @@
 <?php 
-namespace SBIM\DSP;
+namespace MC2\DSP;
 use \DateTime;
-use SBIM\Core\Helper\DateHelper;
+use MC2\Core\Helper\DateHelper;
 class Document{
 
     public $id; // NIPRO
@@ -126,7 +126,6 @@ class Document{
     }
 
     // FILE_URL : CS.INTNIP || '/' || CS.CDPROD || '/' || CS.INTNIPRO || '_' || CS.REVISION || CS.EXTENSION AS FILE_URL
-    // return "http://sls-middlecare.wprod.ds.aphp.fr/middlecare/publication/".$this->patient_id."/".$this->dossier_id."/".$this->id."_".$this->extension;
     public function getURL($revision = null){
         $revision = ($this->revision === 0)
             ? ""

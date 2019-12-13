@@ -1,6 +1,6 @@
 <?php
-namespace SBIM\RedCap;
-use SBIM\Core\Helper\ArrayHelper;
+namespace MC2\RedCap;
+use MC2\Core\Helper\ArrayHelper;
 class RCDictionnary{
 
 	const FIELD_NAME_INDEX = 'Variable / Field Name';
@@ -31,7 +31,7 @@ class RCDictionnary{
         $this->items = array();
     }
 	
-	public static function create_from_mc_items_and_rcproject($dsp_id, array $mc_items, $rc_project){
+	public static function createFromItemsAndRCProject($dsp_id, array $mc_items, $rc_project){
 		$rc_dictionnay = new self($dsp_id);
 		$rc_dictionnay->project = $rc_project;
 		
@@ -39,7 +39,7 @@ class RCDictionnary{
 		// set order of dictionnary fields
         $ordered_dsp_items = array_merge(
             // main instrument shared fields 
-            self::get_shared_mc_items($dsp_id, $rc_project->main_instrument->name, $rc_project->longitudinal),
+            self::getSharedItems($dsp_id, $rc_project->main_instrument->name, $rc_project->longitudinal),
             // main instrument fields
             ArrayHelper::updateValuesOfKey(ArrayHelper::filter($mc_items,null,$where,false), 'PAGE_LIBELLE', $rc_project->main_instrument->name),
             // other fields
@@ -60,12 +60,12 @@ class RCDictionnary{
                 $section_header = '';
             }
             $rc_item = new RCItem($item,$section_header);
-            $rc_dictionnay->items[$rc_item->id] = $rc_item->to_array();   
+            $rc_dictionnay->items[$rc_item->id] = $rc_item->toArray();   
         }
         return $rc_dictionnay;
 	}
 
-	public static function create_from_mc_items_and_rcproject_and_pages($dsp_id, array $mc_items, $rc_project){
+	public static function createFromItemsAndRCProjectWithPages($dsp_id, array $mc_items, $rc_project){
 		$rc_dictionnay = new self($dsp_id);
 		$rc_dictionnay->project = $rc_project;
 		
@@ -73,7 +73,7 @@ class RCDictionnary{
 		// set order of dictionnary fields
         $ordered_dsp_items = array_merge(
             // main instrument shared fields 
-            self::get_shared_mc_items($dsp_id, $rc_project->main_instrument->name, $rc_project->longitudinal),
+            self::getSharedItems($dsp_id, $rc_project->main_instrument->name, $rc_project->longitudinal),
             // main instrument fields
             ArrayHelper::updateValuesOfKey(ArrayHelper::filter($mc_items,null,$where,false), 'PAGE_LIBELLE', $rc_project->main_instrument->name),
             // other fields
@@ -95,37 +95,37 @@ class RCDictionnary{
                 $section_header = '';
             }
             $rc_item = new RCItem($item,$section_header);
-			$rc_dictionnay->items[] = $rc_item->to_array();
+			$rc_dictionnay->items[] = $rc_item->toArray();
         }
         return $rc_dictionnay;
 	}
 
-	// Retourne tous les noms des items du data dictionnnary
-	public function get_data_column_names(){
+	// Retourne toutes les colonnes du data dictionnnary
+	public function getColumnNames(){
 		$result = array();
 		foreach($this->items as $key => $value){
 			if($this->items[$key][self::FIELD_TYPE_INDEX] === 'checkbox'){
-				$choices = self::get_choices_values($this->items[$key][self::CHOICES_INDEX]);
+				$choices = self::getChoiceValues($this->items[$key][self::CHOICES_INDEX]);
 				foreach ($choices as $k => $v)
-					$result[] = self::clean_variable_name($this->items[$key][self::FIELD_NAME_INDEX])."___".$k;
+					$result[] = self::cleanItemName($this->items[$key][self::FIELD_NAME_INDEX])."___".$k;
 			}else{
-				$result[] = self::clean_variable_name($this->items[$key][self::FIELD_NAME_INDEX]);
+				$result[] = self::cleanItemName($this->items[$key][self::FIELD_NAME_INDEX]);
 			}
 		}
 		return array_unique($result);
 	}
 
-	public static function clean_variable_name($var_name){
+	public static function cleanItemName($var_name){
 		$result = str_replace(" ",'_',$var_name);
 		$result = str_replace(['à','é','è',"'"],'',$result);
 		return $result;
 	}
 
-	public function get_form_names(){
+	public function getFormNames(){
 		return array_unique(array_column($this->items, 'Form Name'));
 	}
 
-	public static function get_choices_values($liste_values){
+	public static function getChoiceValues($liste_values){
 		$result = array();
 		$choices = explode('|', $liste_values);
 		foreach ($choices as $choice) {
@@ -135,7 +135,7 @@ class RCDictionnary{
 		return $result;
 	}
 	
-	public static function get_index_from_value($value,$liste_values){
+	public static function getIndexInValues($value,$liste_values){
 		$value = is_null($value) ? "" : $value;
 		$choices = explode('|', $liste_values);
 		foreach ($choices as $choice) {
@@ -145,19 +145,16 @@ class RCDictionnary{
 		return null;
 	}
 
-	public function search_item($var_name,$document_type = null){
+	public function searchItem($var_name,$document_type = null){
 		if($this->project->event_as_document_type === false){
 			return $this->items[$var_name];
 		}else{
 			$var_name_event = $var_name. "_".$document_type;
 			foreach ($this->items as $item) {
-				if($var_name === $item[self::FIELD_NAME_INDEX]){
-					return $item;
-				}elseif(substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name_event)) === $var_name_event)
-					return $item;
-			}
-			foreach ($this->items as $item) {
-				if(substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name)) === $var_name)
+				$item_found = ($var_name === $item[self::FIELD_NAME_INDEX])
+					|| (substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name_event)) === $var_name_event)
+					|| (substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name)) === $var_name);
+				if($item_found === true)
 					return $item;
 			}
 		}
@@ -167,7 +164,7 @@ class RCDictionnary{
     // ---- Private Helpers
 
 	// TODO refactor this 
-	private static function get_shared_mc_items($dsp_id, $main_instrument_name, $longitudinal = true){
+	private static function getSharedItems($dsp_id, $main_instrument_name, $longitudinal = true){
 		$bloc_no = '1';
 		// order for longitudinal RC project
 		$shared_instruments_items = ($longitudinal === true) 
@@ -216,7 +213,6 @@ class RCDictionnary{
 			$page_name = $instrument_items['page_name'];
 			$page_lib = $instrument_items['page_lib'];
 			foreach($instrument_items['items'] as $item_name => $item_libelle){
-				// TEMP si libellé commence par 'Date' => mettre OPTIONS à D_CALENDAR
 				$options = (substr($item_libelle, 0, 4) === "Date") ? "D_CALENDAR": '';
 				$mcgv [] = array(
 					'DOSSIER_ID' => $dsp_id,

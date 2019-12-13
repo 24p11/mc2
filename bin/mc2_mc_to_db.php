@@ -34,21 +34,21 @@
  * -----------------------------------------------------------------------------------------
  */
 require_once __DIR__.'/../vendor/autoload.php';
-use SBIM\Core\Helper\DateHelper;
-use SBIM\Core\Log\LoggerFactory;
-use SBIM\Core\CSV\CSVWriter;
-use SBIM\Core\CSV\CSVOption;
-use SBIM\MiddleCare\MCRepository;
-use SBIM\MiddleCare\MCExtractManager;
-use SBIM\DSP\DossierRepository;
-use SBIM\DSP\Dossier;
-use SBIM\DSP\Page;
-use SBIM\DSP\Item;
-use SBIM\DSP\DocumentRepository;
-use SBIM\DSP\Document;
-use SBIM\DSP\ItemValue;
-use SBIM\DSP\PatientRepository;
-use SBIM\DSP\Patient;
+use MC2\Core\Helper\DateHelper;
+use MC2\Core\Log\LoggerFactory;
+use MC2\Core\CSV\CSVWriter;
+use MC2\Core\CSV\CSVOption;
+use MC2\MiddleCare\MCRepository;
+use MC2\MiddleCare\MCExtractManager;
+use MC2\DSP\DossierRepository;
+use MC2\DSP\Dossier;
+use MC2\DSP\Page;
+use MC2\DSP\Item;
+use MC2\DSP\DocumentRepository;
+use MC2\DSP\Document;
+use MC2\DSP\ItemValue;
+use MC2\DSP\PatientRepository;
+use MC2\DSP\Patient;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');
@@ -70,6 +70,7 @@ if ($argc < 2) {
     - dsp : identifiant du DSP (ex: DSP2)
     - deb (optionnal) : date de début au format YYYYMMDD
     - fin (optionnal) : date de fin au format YYYYMMDD
+    - nipro (optionnal) : identifiant du document
     
     EXAMPLES
     - Extraire la liste des DSP de MiddleCare et les enregistrer dans la base locale :
@@ -80,11 +81,14 @@ if ($argc < 2) {
 
     - Extraire les données d'un DSP MiddleCare pour une période donnée et les enregistrer dans la base locale :
     > php mc2_mc_to_db.php --site sls --dsp DSP2 --deb 20180101 --fin 20180201
+    
+    - Extraire les données d'un DSP MiddleCare pour un document et les enregistrer dans la base locale :
+    > php mc2_mc_to_db.php --site sls --dsp DSP2 --nipro 123456789
     ";
     exit(1);
 }
 
-$longopts = array("dict", "dsp:", "deb:", "fin:","items:","site:");
+$longopts = array("dict", "dsp:", "deb:", "fin:","items:","site:","nipro:");
 $options = getopt("", $longopts);
 
 $now = new DateTime();
@@ -106,12 +110,12 @@ $mc_extracter = new MCExtractManager(MCExtractManager::SRC_MIDDLECARE,$site,$mc_
 if(isset($options['dict'])){
     // ----- DSP List
     if(!isset($options['dsp'])){
-        $mc_extracter->import_all_dsp_metadata();
+        $mc_extracter->importAllDSPMetadata();
     }
     // ----- DSP Dictionnary (Items / Pages)
     else{
         $dsp_id = $options['dsp'];
-        $mc_extracter->import_dsp_dictionnary($dsp_id);
+        $mc_extracter->importDSPDictionnary($dsp_id);
     }
 }else{
     // ----- DSP Data (Document / Item Value / Patient)
@@ -120,9 +124,14 @@ if(isset($options['dict'])){
         $date_debut = new DateTime($options['deb']);
         $date_fin = new DateTime($options['fin']);
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $mc_extracter->import_dsp_data($dsp_id,$date_debut,$date_fin,$item_names);
+        $mc_extracter->importDSPData($dsp_id,$date_debut,$date_fin,$item_names);
+    }else if(isset($options['dsp']) && isset($options['nipro'])){
+        $dsp_id = $options['dsp'];
+        $nipro = $options['nipro'];
+        $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
+        $mc_extracter->importDSPDocumentData($dsp_id, $nipro, $item_names);
     }else{
-        $logger->addInfo("Unknown parameters",array('options' => $options));
+        $logger->info("Unknown parameters",array('options' => $options));
     }
 }
-$logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->info("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

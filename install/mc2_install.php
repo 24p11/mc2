@@ -7,18 +7,18 @@
  * ================================================================================================================
  */
 require_once __DIR__.'/../vendor/autoload.php';
-use SBIM\Core\Helper\DateHelper;
-use SBIM\Core\Helper\ReflectionHelper;
-use SBIM\Core\Log\LoggerFactory;
-use SBIM\MiddleCare\MCRepository;
-use SBIM\DSP\DossierRepository;
-use SBIM\DSP\Dossier;
-use SBIM\DSP\DocumentRepository;
-use SBIM\DSP\Document;
-use SBIM\DSP\ItemValue;
-use SBIM\DSP\PatientRepository;
-use SBIM\DSP\Patient;
-use SBIM\RedCap\RCInstrument;
+use MC2\Core\Helper\DateHelper;
+use MC2\Core\Helper\ReflectionHelper;
+use MC2\Core\Log\LoggerFactory;
+use MC2\MiddleCare\MCRepository;
+use MC2\DSP\DossierRepository;
+use MC2\DSP\Dossier;
+use MC2\DSP\DocumentRepository;
+use MC2\DSP\Document;
+use MC2\DSP\ItemValue;
+use MC2\DSP\PatientRepository;
+use MC2\DSP\Patient;
+use MC2\RedCap\RCInstrument;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');
@@ -51,21 +51,21 @@ $patient_repo = new PatientRepository($config_db_dsp,$logger);
 switch(true){
     case isset($options['check']) : 
         // check connexions DB MiddleCare + Repositories (DB MySQL)
-        $logger->AddInfo("connection MiddleCare : ". ($mc_repo->checkConnection() ? "successfull" : "failed"));
-        $logger->AddInfo("connection DossierRepository  : ". ($dossier_repo->checkConnection() ? "successfull" : "failed"));
-        $logger->AddInfo("connection DocumentRepository : ". ($document_repo->checkConnection() ? "successfull" : "failed"));
-        $logger->AddInfo("connection PatientRepository  : ". ($patient_repo->checkConnection() ? "successfull" : "failed"));
+        $logger->info("connection MiddleCare : ". ($mc_repo->checkConnection() ? "successfull" : "failed"));
+        $logger->info("connection DossierRepository  : ". ($dossier_repo->checkConnection() ? "successfull" : "failed"));
+        $logger->info("connection DocumentRepository : ". ($document_repo->checkConnection() ? "successfull" : "failed"));
+        $logger->info("connection PatientRepository  : ". ($patient_repo->checkConnection() ? "successfull" : "failed"));
         break;
     case isset($options['install']) : 
-        $logger->AddInfo("creating MySQL tables");
-        $logger->AddInfo("creation table ".$patient_repo->getCreateTablePatientQuery()." : ". ($patient_repo->createTablePatient() ? "successful" : "failed"));
-        $logger->AddInfo("creation table ".$document_repo->getCreateTableItemValueQuery()." : ". ($document_repo->createTableItemValue() ? "successful" : "failed"));
-        $logger->AddInfo("creation table ".$document_repo->getCreateTableDocumentQuery()." : ". ($document_repo->createTableDocument() ? "successful" : "failed"));
-        $logger->AddInfo("creation table ".$dossier_repo->getCreateTableItemQuery()." : ". ($dossier_repo->createTableItem() ? "successful" : "failed"));
-        $logger->AddInfo("creation table ".$dossier_repo->getCreateTableDossierQuery()." : ". ($dossier_repo->createTableDossier() ? "successful" : "failed"));
+        $logger->info("creating MySQL tables");
+        $logger->info("creation table ".$patient_repo->getCreateTablePatientQuery()." : ". ($patient_repo->createTablePatient() ? "successful" : "failed"));
+        $logger->info("creation table ".$document_repo->getCreateTableItemValueQuery()." : ". ($document_repo->createTableItemValue() ? "successful" : "failed"));
+        $logger->info("creation table ".$document_repo->getCreateTableDocumentQuery()." : ". ($document_repo->createTableDocument() ? "successful" : "failed"));
+        $logger->info("creation table ".$dossier_repo->getCreateTableItemQuery()." : ". ($dossier_repo->createTableItem() ? "successful" : "failed"));
+        $logger->info("creation table ".$dossier_repo->getCreateTableDossierQuery()." : ". ($dossier_repo->createTableDossier() ? "successful" : "failed"));
         break;
     case isset($options['yuml']) : 
-        $logger->AddInfo("generating MySQL schema diagram");
+        $logger->info("generating MySQL schema diagram");
 
         // get current MySQL DB schema
         $schema = '';
@@ -92,7 +92,7 @@ switch(true){
         file_put_contents(__DIR__."/../docs/schemas/{$file_name}",$md);
         break;
     default :
-        $logger->addInfo("Parametres inconnus");
+        $logger->info("Parametres inconnus");
 }
 
-$logger->addInfo("-------- Finished after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->info("-------- Finished after ".$now->diff(new DateTime())->format('%H:%I:%S'));

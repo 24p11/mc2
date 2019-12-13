@@ -1,7 +1,7 @@
 <?php 
-namespace SBIM\DSP;
+namespace MC2\DSP;
 use \DateTime;
-use SBIM\Core\Helper\DateHelper;
+use MC2\Core\Helper\DateHelper;
 class ItemValue{
 
     public $id; // NIPRO
@@ -40,7 +40,7 @@ class ItemValue{
             $item_value->patient_id = $mc_data['NIP'];
             $item_value->page_nom = $item['PAGE_NOM'];
             $item_value->var = $item['ITEM_ID'];
-            $item_value->val = $mc_data[$item['ITEM_ID']];
+            $item_value->val = isset($mc_data[$item['ITEM_ID']]) ? $mc_data[$item['ITEM_ID']] : null;
         }
         return $item_value;
     }

@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\RedCap;
+namespace MC2\RedCap;
 class RCProject{
 
     public $name = '';

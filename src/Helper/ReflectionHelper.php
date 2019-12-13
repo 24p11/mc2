@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\Core\Helper;
+namespace MC2\Core\Helper;
 use ReflectionClass;
 /**
  * Reflection Helper

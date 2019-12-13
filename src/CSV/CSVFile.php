@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\Core\CSV;
+namespace MC2\Core\CSV;
 class CSVFile{
 
 	public $file_name_prefix = null;

@@ -2,26 +2,26 @@
 <?php
 /** 
  * ================================================================================================================
- * Extract documents from a csv 
+ * Extract documents as PDF from middlecare via a CSV listing
  * ================================================================================================================
  * usage : 
  * php mc2_controle_t2a.php --deb 20180101 --fin 20190101
  */
 require_once __DIR__.'/../vendor/autoload.php';
-use SBIM\Core\Helper\DateHelper;
-use SBIM\Core\Log\LoggerFactory;
-use SBIM\Core\CSV\CSVWriter;
-use SBIM\Core\CSV\CSVOption;
-use SBIM\MiddleCare\MCRepository;
-use SBIM\MiddleCare\MCExtractManager;
-use SBIM\DSP\DossierRepository;
-use SBIM\DSP\Dossier;
-use SBIM\DSP\DocumentRepository;
-use SBIM\DSP\Document;
-use SBIM\DSP\ItemValue;
-use SBIM\DSP\PatientRepository;
-use SBIM\DSP\Patient;
-use SBIM\RedCap\RCInstrument;
+use MC2\Core\Helper\DateHelper;
+use MC2\Core\Log\LoggerFactory;
+use MC2\Core\CSV\CSVWriter;
+use MC2\Core\CSV\CSVOption;
+use MC2\MiddleCare\MCRepository;
+use MC2\MiddleCare\MCExtractManager;
+use MC2\DSP\DossierRepository;
+use MC2\DSP\Dossier;
+use MC2\DSP\DocumentRepository;
+use MC2\DSP\Document;
+use MC2\DSP\ItemValue;
+use MC2\DSP\PatientRepository;
+use MC2\DSP\Patient;
+use MC2\RedCap\RCInstrument;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');
@@ -51,6 +51,7 @@ $config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config
 $site = isset($options["site"]) ? $options["site"] : 'sls';
 $mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
 $dl_all_revision = false;
+$base_url = $config_db_middlecare[$site]['doc_base_url'];
 
 $controles = isset($options['in']) 
     ? open_csv(__DIR__."/".$options['in'])
@@ -62,7 +63,7 @@ $ndas = array_column($controles, 'nas');
 $mc_documents = $mc_repo->getDocumentFromNDA($ndas);
 $documents = [];
 foreach ($mc_documents as $mc_document)
-    $documents[] = Document::createFromMCData($document_repo->base_url,$site,$mc_document['DSP_ID'],$mc_document);
+    $documents[] = Document::createFromMCData($base_url,$site,$mc_document['DSP_ID'],$mc_document);
 
 // ---- Download documents 
 $count_documents = count($documents);
@@ -94,7 +95,7 @@ foreach($documents as $document){
                 )
             );
             file_put_contents("{$output_folder}{$file_name}",file_get_contents($url,false, stream_context_create($context)));
-            $logger->addInfo("telechargement {$i}/{$count_documents} : {$file_name}",array('url' => $url));
+            $logger->info("downloading {$i}/{$count_documents} : {$file_name}",array('url' => $url));
             if(!isset($doc_type_count[$ogc]))
                 $doc_type_count[$ogc] = [];
             if(!isset($doc_type_count[$ogc][$document->categorie]))
@@ -150,4 +151,4 @@ foreach ($doc_type_count as $ogc => $counts) {
     fputcsv($fp, $fields, $delimiter);
 }
 fclose($fp);
-$logger->addInfo("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+$logger->info("Ended after ".$now->diff(new DateTime())->format('%H:%I:%S'));

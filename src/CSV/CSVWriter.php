@@ -1,5 +1,5 @@
 <?php
-namespace SBIM\Core\CSV;
+namespace MC2\Core\CSV;
 use \DateTime;
 class CSVWriter{
 

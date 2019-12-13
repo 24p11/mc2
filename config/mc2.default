@@ -1,0 +1,61 @@
+# Utilisation :  
+# - copiez ce fichier et renommer le en mc2.yml
+# - renseigner les champs du DSN de la base mc2
+# - renseigner les champs des DSN des bases MiddleCare
+# - renseigner les infos de l'instance RedCap
+
+# ---- mc2 database
+mc2:
+    doctrine:
+        dbal:
+            driver: 'pdo_mysql'
+            dbname: 'dbname'
+            host: 'host.fr'
+            user: 'user'
+            password: 'password'
+            charset: 'UTF8'
+            # port: '123'
+    tables:
+        dossier: 'mcdsp_dossier'
+        item: 'mcdsp_item'
+        page: 'mcdsp_page'
+        document: 'mcdsp_document'
+        item_value: 'mcdsp_item_value'
+        patient: 'mcdsp_patient'
+
+# ---- MiddleCare 
+middlecare:
+    sls:
+        doctrine:
+            dbal:
+                driver: 'oci8'
+                dbname: 'dbname'
+                host: 'host.fr'
+                port: '1234'
+                user: 'user'
+                password: 'password'
+                charset: 'AL32UTF8'
+        doc_base_url: 'http://middle_care_path_to_documents'
+    lrb:
+        doctrine:
+            dbal:
+                driver: 'oci8'
+                dbname: 'dbname'
+                host: 'host.fr'
+                port: '1234'
+                user: 'user'
+                password: 'password'
+                charset: 'AL32UTF8'
+        doc_base_url: 'http://middle_care_path_to_documents'
+
+# ---- RedCap
+redcap:
+    api_token: '12345678978798754656465465465'
+    # URL de l'API RedCap
+    api_url: 'http://host.fr/redcap/api/'
+    # Longitudinal project events parameters
+    arm_name: 'arm_1'
+    shared_event_name: 'Patient'
+    shared_event_custom_label: ''
+    repeatable_event_name: 'Document' 
+    repeatable_event_custom_label: '[date_exam][type_exam][deb_hosp][fin_hosp]'

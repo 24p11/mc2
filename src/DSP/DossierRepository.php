@@ -42,21 +42,24 @@ class DossierRepository{
     }
 
     /**
-     * @param string $params DSN DSP (MySQL)
+     *  @param array $configuration configuration that should contains MC2 DSN (doctrine compatible)
      * @param Monolog\Logger $logger
      */
-    public function __construct($params,$logger,$site = null){
-        $this->db = DriverManager::getConnection($params['doctrine']['dbal']);
-        $this->dossier_table = $params['tables']['dossier'];
-        $this->item_table = $params['tables']['item'];
-        $this->page_table = $params['tables']['page'];
+    public function __construct(array $configuration,$logger,$site){
+        if(isset($configuration['mc2']['doctrine']['dbal']) === false)
+            throw new InvalidArgumentException("MC2 DSN was not found in given configuration");
+            
+        $this->db = DriverManager::getConnection($configuration['mc2']['doctrine']['dbal']);
+        $this->dossier_table = $configuration['mc2']['tables']['dossier'];
+        $this->item_table = $configuration['mc2']['tables']['item'];
+        $this->page_table = $configuration['mc2']['tables']['page'];
         $this->logger = $logger;
         $this->site = $site;
     }
 
     public function checkConnection(){
         try{
-            if ($this->db->connect())
+            if($this->db->connect())
                 return true;
         } 
         catch (\Exception $e) {

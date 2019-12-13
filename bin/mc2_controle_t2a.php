@@ -5,7 +5,7 @@
  * Extract documents as PDF from middlecare via a CSV listing
  * ================================================================================================================
  * usage : 
- * php mc2_controle_t2a.php --deb 20180101 --fin 20190101
+ * php mc2_controle_t2a.php --site sls --in ../data/controle_t2a_2019_light.csv
  */
 require_once __DIR__.'/../vendor/autoload.php';
 use MC2\Core\Helper\DateHelper;
@@ -46,12 +46,12 @@ $options = getopt("", $longopts);
 
 $now = new DateTime();
 
+$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yml"));
 $logger = LoggerFactory::create_logger("mc2_controle_t2a", __DIR__.'/../log');
-$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
 $site = isset($options["site"]) ? $options["site"] : 'sls';
-$mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
+$mc_repo = new MCRepository($configuration,$logger,$site);
 $dl_all_revision = false;
-$base_url = $config_db_middlecare[$site]['doc_base_url'];
+$base_url = $configuration['middlecare'][$site]['doc_base_url'];
 
 $controles = isset($options['in']) 
     ? open_csv(__DIR__."/".$options['in'])
@@ -108,6 +108,7 @@ foreach($documents as $document){
     $i++;
 }
 
+// TODO move this in a document related static method / helper
 $mappin_categorie = [
     "120" => "CR de sejour hospitalier",
     "201" => "CR (ou fiche) de consultation",

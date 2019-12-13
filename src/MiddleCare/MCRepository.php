@@ -1,6 +1,7 @@
 <?php
 namespace MC2\MiddleCare;
 use \PDO;
+use \InvalidArgumentException;
 use MC2\Core\Helper\DateHelper;
 use Doctrine\DBAL\DriverManager;
 // ================================================================================
@@ -21,11 +22,15 @@ class MCRepository{
     private $site;
 
     /**
-     * @param string $params DSN MiddleCare (Oracle)
+     * @param string $configuration configuration that should contains MiddleCare DSN(s) (compatible with Doctrine)
      * @param Monolog\Logger $logger
      */
-    public function __construct($params,$logger,$site){
-        $this->db_middlecare = DriverManager::getConnection($params['doctrine']['dbal']);
+    public function __construct($configuration,$logger,$site){
+        if(isset($configuration['middlecare'][$site]['doctrine']['dbal']) === false)
+            throw new InvalidArgumentException("MiddleCare DSN for site '$site' was not found in given configuration");
+            
+        $site_db_config = $configuration['middlecare'][$site]['doctrine']['dbal'];
+        $this->db_middlecare = DriverManager::getConnection($site_db_config);
         $this->logger = $logger;
         $this->site = $site;
     }
@@ -276,9 +281,6 @@ class MCRepository{
         $this->logger->info("Retrieved all IPPs", array('dsp_id' => $dsp_id, 'row_count' => count($result)));
         return $result;
     }
-    
-    
-    
 
     /**
      * Retourne les données d'un DSP pour une période donnée.
@@ -403,7 +405,7 @@ class MCRepository{
             WHERE CS.NUM_VENU IN({$query_in_ndas})
             ORDER BY INCL.NIP";
 
-        // $this->logger->debug("getDocumentFromNDA", array('query' => $query));
+        $this->logger->debug("getDocumentFromNDA", array('query' => $query));
         $result = $this->executeQuery($query);
         $this->logger->info("Retrieved DSP data by NDA", array('row_count' => count($result)));
 		return $result;
@@ -538,7 +540,6 @@ class MCRepository{
     // ---- Helpers
 
     private function getDSPDataChunk($dsp_id, $date_debut, $date_fin, array $items, $category = null){    
-
         $query_items_select = "";
         foreach($items as $item)
             $query_items_select .= ", {$dsp_id}.{$item['PAGE_NOM']}.{$item['ITEM_ID']}";
@@ -583,7 +584,7 @@ class MCRepository{
 
         $this->logger->debug("query_get_dsp", array('query' => $query_get_dsp));
         $result = $this->executeQuery($query_get_dsp);
-        $this->logger->info("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'items_count'=> count($items), 'row_count' => count($result)));
+        $this->logger->debug("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'items_count'=> count($items), 'row_count' => count($result)));
 		return $result;
     }
 

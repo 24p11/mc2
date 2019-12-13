@@ -89,23 +89,22 @@ $options = getopt("", $longopts);
 
 $now = new DateTime();
 
+$config_mc2 = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yml"));
 $logger = LoggerFactory::create_logger("mc2_db_to_rc", __DIR__.'/../log');
-$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
-$config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
-$config_redcap = Yaml::parse(file_get_contents(__DIR__."/../config/config_redcap.yml"));
 $input_folder = __DIR__."/../data";
 $site = isset($options["site"]) ? $options["site"] : 'sls';
-
-$mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
-$dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
-$document_repo = new DocumentRepository($config_db_dsp,$logger,$site,$config_db_middlecare[$site]['doc_base_url']);
-$patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = isset($options['excel']);
 $nohtml = isset($options['nohtml']);
+$base_url = $config_mc2['middlecare'][$site]['doc_base_url'];
+
+$mc_repo = null;
+$dossier_repo = new DossierRepository($config_mc2,$logger,$site);
+$document_repo = new DocumentRepository($config_mc2,$logger,$site,$base_url);
+$patient_repo = new PatientRepository($config_mc2,$logger);
 $csv_options = new CSVOption($excel_friendly);
 $csv_writer = new CSVWriter($csv_options,$logger);
 $mc_extracter = new MCExtractManager(MCExtractManager::SRC_LOCAL_DB,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo, $csv_writer, $logger);
-$rc_service = new RCService($input_folder,$config_redcap['redcap']['api_url'],$config_redcap['redcap']['api_token'],$logger);
+$rc_service = new RCService($input_folder,$config_mc2['redcap']['api_url'],$config_mc2['redcap']['api_token'],$logger);
 
 // ----- RC Data Dictionnary
 if(isset($options['dict']) && isset($options['dsp'])){
@@ -116,9 +115,9 @@ if(isset($options['dict']) && isset($options['dsp'])){
     $main_instrument = new RCInstrument($main_instrument_name, $item_names);
     $rc_project = new RCProject('RC_'.$dsp_id,$main_instrument);
     $rc_project->main_instrument_only = isset($options["inst_only"]);
-    $rc_project->arm_name = $config_redcap['redcap']['arm_name'];
-    $rc_project->shared_event_name = $config_redcap['redcap']['shared_event_name'];
-    $rc_project->repeatable_event_name = $config_redcap['redcap']['repeatable_event_name'];
+    $rc_project->arm_name = $config_mc2['redcap']['arm_name'];
+    $rc_project->shared_event_name = $config_mc2['redcap']['shared_event_name'];
+    $rc_project->repeatable_event_name = $config_mc2['redcap']['repeatable_event_name'];
     $rc_project->longitudinal = isset($options["long"]);
     $rc_project->event_as_document_type = isset($options["bydoctype"]);
 
@@ -141,9 +140,9 @@ if(isset($options['dict']) && isset($options['dsp'])){
         $main_instrument = new RCInstrument($main_instrument_name, $item_names);
         $rc_project = new RCProject('RC_'.$dsp_id,$main_instrument);
         $rc_project->main_instrument_only = isset($options["inst_only"]);
-        $rc_project->arm_name = $config_redcap['redcap']['arm_name'];
-        $rc_project->shared_event_name = $config_redcap['redcap']['shared_event_name'];
-        $rc_project->repeatable_event_name = $config_redcap['redcap']['repeatable_event_name'];
+        $rc_project->arm_name = $config_mc2['redcap']['arm_name'];
+        $rc_project->shared_event_name = $config_mc2['redcap']['shared_event_name'];
+        $rc_project->repeatable_event_name = $config_mc2['redcap']['repeatable_event_name'];
         $rc_project->longitudinal = isset($options["long"]);
         $rc_project->event_as_document_type = isset($options["bydoctype"]);
 

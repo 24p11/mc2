@@ -37,16 +37,16 @@ $options = getopt("", $longopts);
 
 $now = new DateTime();
 
+$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yml"));
 $logger = LoggerFactory::create_logger("mc2_db_to_pdf", __DIR__.'/../log');
-$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
-$config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
 $site = isset($options["site"]) ? $options["site"] : 'sls';
-
-$mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
-$dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
-$document_repo = new DocumentRepository($config_db_dsp,$logger,$site,$config_db_middlecare[$site]['doc_base_url']);
-$patient_repo = new PatientRepository($config_db_dsp,$logger);
 $excel_friendly = isset($options['excel']);
+$base_url = $configuration['middlecare'][$site]['doc_base_url'];
+
+$mc_repo = null;
+$dossier_repo = new DossierRepository($configuration,$logger,$site);
+$document_repo = new DocumentRepository($configuration,$logger,$site,$base_url);
+$patient_repo = new PatientRepository($configuration,$logger);
 $csv_options = new CSVOption($excel_friendly);
 $csv_writer = new CSVWriter($csv_options,$logger);
 $mc_extracter = new MCExtractManager(MCExtractManager::SRC_LOCAL_DB,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo, $csv_writer, $logger);

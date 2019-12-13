@@ -15,13 +15,14 @@ Ce document fourni des exemples de chacune des étapes permettant l'extraction d
 Prérequis  
 ===============================================================================
 - DPI **MiddleCare**
-- PHP 5.3 + OCI8
+- PHP 7+
+- OCI8
 - Composer
 - MySQL
 - Optionnellement : 
   - projet RedCap avec API Key
 
-NB : mc2 a été développé de façon a pouvoir interroger plusieurs instances de bases de données **MiddleCare** (par exemple dans le cadre d'un groupe hospitalier composé de plusieurs établissements). Chaque instance est indentifiée par une variable **Site** .
+NB : mc2 a été développé de façon a pouvoir interroger plusieurs instances de bases de données **MiddleCare** (par exemple dans le cadre d'un groupe hospitalier composé de plusieurs établissements). Chaque instance est identifiée par une variable **Site** .
 
 Installation
 ===============================================================================
@@ -67,7 +68,7 @@ Avant toute extraction à destination d'un projet RedCap, il est conseillé de r
 
 **Note importante :**
 
-Afin de ne pas solliciter inutilement la base de production de MiddleCare, il est conseillé  d'extraire les données d'un DSP dans une base de donnée MySQL (par exemple la nuit, automatiquement et périodiquement) puis d'exporter de cette base les données d'intérêt dans un fichiers CSV ou un projet RedCap.  
+Afin de ne pas solliciter inutilement la base de production de MiddleCare, il est conseillé  d'extraire les données d'un DSP dans une base de donnée MySQL (par exemple la nuit, automatiquement et périodiquement) puis d'exporter de cette base les données d'intérêt dans un fichier CSV ou un projet RedCap.  
 
 
 Extraction MiddleCare vers base de données MySQL

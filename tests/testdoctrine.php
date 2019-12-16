@@ -3,7 +3,7 @@ require __DIR__.'/../vendor/autoload.php';
 use Symfony\Component\Yaml\Yaml;
 use Doctrine\DBAL\DriverManager;
 
-$params = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
+$params = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yaml"));
 var_dump($params);
 
 $db_con = DriverManager::getConnection($params['doctrine']['dbal']);

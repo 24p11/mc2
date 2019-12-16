@@ -2,8 +2,9 @@
 namespace MC2\MiddleCare;
 use \PDO;
 use \InvalidArgumentException;
-use MC2\Core\Helper\DateHelper;
+use Psr\Log\LoggerInterface;
 use Doctrine\DBAL\DriverManager;
+use MC2\Core\Helper\DateHelper;
 // ================================================================================
 // class MCRepository 
 // 
@@ -22,10 +23,10 @@ class MCRepository{
     private $site;
 
     /**
-     * @param string $configuration configuration that should contains MiddleCare DSN(s) (compatible with Doctrine)
-     * @param Monolog\Logger $logger
+     * @param array $configuration configuration that should contains MiddleCare DSN(s) (compatible with Doctrine)
+     * @param Psr\Log\LoggerInterface $logger
      */
-    public function __construct($configuration,$logger,$site){
+    public function __construct($configuration,LoggerInterface $logger,$site){
         if(isset($configuration['middlecare'][$site]['doctrine']['dbal']) === false)
             throw new InvalidArgumentException("MiddleCare DSN for site '$site' was not found in given configuration");
             

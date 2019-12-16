@@ -37,7 +37,7 @@ $options = getopt("", $longopts);
 
 $now = new DateTime();
 
-$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yml"));
+$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yaml"));
 $logger = LoggerFactory::create_logger("mc2_db_to_pdf", __DIR__.'/../log');
 $site = isset($options["site"]) ? $options["site"] : 'sls';
 $excel_friendly = isset($options['excel']);

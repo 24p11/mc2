@@ -55,7 +55,7 @@ if ($argc < 2) {
     php mc2_db_to_rc.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--long] [--inst <custom_intrument_name>] [--inst_only] [--bydoctype] [--noapicall]
 
     DESCRIPTION
-    Extraction de la base de données locale mc2 (cf. config_db_mc2.yml) vers un projet RedCap via l'API RedCap
+    Extraction de la base de données locale mc2 (cf. mc2.yaml) vers un projet RedCap via l'API RedCap
     
     OPTIONS
     - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
@@ -78,7 +78,7 @@ if ($argc < 2) {
     - Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal, avec filtrage des variables/items :
     > php mc2_db_to_rc.php --dict --site sls --dsp DSP96 --long --inst 'Document CarT' --inst_only --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'
     
-    - Extraire les données d'un DSP pour une période donnée depuis la base locale vers fichier(s) CSV RedCap et les envoyer vers l'API RedCap(cf. config_redcap.yml):
+    - Extraire les données d'un DSP pour une période donnée depuis la base locale vers fichier(s) CSV RedCap et les envoyer vers l'API RedCap(cf. mc2.yaml):
     > php mc2_db_to_rc.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --long --inst_only --inst 'Indicateurs Séno' --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2 VAR83 VAR84 ...'
     ";
     exit(1);
@@ -89,7 +89,7 @@ $options = getopt("", $longopts);
 
 $now = new DateTime();
 
-$config_mc2 = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yml"));
+$config_mc2 = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yaml"));
 $logger = LoggerFactory::create_logger("mc2_db_to_rc", __DIR__.'/../log');
 $input_folder = __DIR__."/../data";
 $site = isset($options["site"]) ? $options["site"] : 'sls';

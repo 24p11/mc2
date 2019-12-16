@@ -4,6 +4,7 @@ use \PDO;
 use MC2\Core\Helper\DateHelper;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Connection;
+use Psr\Log\LoggerInterface;
 /**
  * Document Repository
  * 
@@ -37,9 +38,9 @@ class DocumentRepository{
 
     /**
      * @param array $configuration configuration that should contains MC2 DSN (doctrine compatible)
-     * @param Monolog\Logger $logger
+     * @param Psr\Log\LoggerInterface $logger
      */
-    public function __construct(array $configuration,$logger,$site,$doc_base_url){
+    public function __construct(array $configuration,LoggerInterface $logger,$site,$doc_base_url){
         if(isset($configuration['mc2']['doctrine']['dbal']) === false)
             throw new InvalidArgumentException("MC2 DSN was not found in given configuration");
             

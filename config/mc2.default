@@ -1,5 +1,5 @@
 # Utilisation :  
-# - copiez ce fichier et renommer le en mc2.yml
+# - copiez ce fichier et renommer le en mc2.yaml
 # - renseigner les champs du DSN de la base mc2
 # - renseigner les champs des DSN des bases MiddleCare
 # - renseigner les infos de l'instance RedCap

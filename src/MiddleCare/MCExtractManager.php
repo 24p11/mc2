@@ -2,6 +2,7 @@
 namespace MC2\MiddleCare;
 use \DateTime;
 use \DateInterval;
+use Psr\Log\LoggerInterface;
 use MC2\Core\CSV\CSVFile;
 use MC2\Core\Helper\DateHelper;
 use MC2\Core\Helper\ArrayHelper;
@@ -53,7 +54,7 @@ final class MCExtractManager{
 	private $logger = null;
 	private $output_folder = null;
 
-	public function __construct($source, $site, $mc_repository,$dossier_repository,$document_repository,$patient_repository, $csv_writer, $logger){
+	public function __construct($source, $site, $mc_repository, $dossier_repository, $document_repository, $patient_repository, $csv_writer, LoggerInterface $logger){
 		$this->source = $source;
 		$this->site = $site;
 		$this->mc_repository = $mc_repository;

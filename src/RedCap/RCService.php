@@ -10,7 +10,7 @@ class RCService{
     /**
      * @param string $api_url
      * @param string $api_token
-     * @param Monolog\Logger $logger
+     * @param Psr\Log\LoggerInterface $logger
      */
     public function __construct($input_folder,$api_url,$api_token,$logger){
 		$this->input_folder = $input_folder;

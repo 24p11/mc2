@@ -1,8 +1,9 @@
 <?php
 namespace MC2\DSP;
 use \PDO;
-use MC2\Core\Helper\DateHelper;
+use Psr\Log\LoggerInterface;
 use Doctrine\DBAL\DriverManager;
+use MC2\Core\Helper\DateHelper;
 /**
  * Patient Repository
  */
@@ -21,9 +22,9 @@ class PatientRepository{
 
     /**
      * @param array $configuration configuration that should contains MC2 DSN (doctrine compatible)
-     * @param Monolog\Logger $logger
+     * @param Psr\Log\LoggerInterface $logger
      */
-    public function __construct(array $configuration,$logger){
+    public function __construct(array $configuration, LoggerInterface $logger){
         if(isset($configuration['mc2']['doctrine']['dbal']) === false)
             throw new InvalidArgumentException("MC2 DSN was not found in given configuration");
             

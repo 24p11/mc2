@@ -37,7 +37,7 @@ if ($argc < 2) {
     php mc2_db_to_csv.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--type_doc <doc_type>]
 
     DESCRIPTION
-    Extraction des données de MiddleCare (cf. config_db_middlecare.yml) vers base de données locale mc2 (cf. config_db_mc2.yml)
+    Extraction des données de MiddleCare vers base de données locale mc2 (cf. mc2.yaml)
     
     OPTIONS
     - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
@@ -72,7 +72,7 @@ $options = getopt("", $longopts);
 
 $now = new DateTime();
 
-$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yml"));
+$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yaml"));
 $logger = LoggerFactory::create_logger("mc2_db_to_csv", __DIR__.'/../log');
 $site = isset($options['site']) ? $options['site'] : 'sls';
 $period = isset($options['period']) ? $options['period'] : 'P1M';

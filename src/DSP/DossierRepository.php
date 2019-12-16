@@ -1,6 +1,7 @@
 <?php
 namespace MC2\DSP;
 use \PDO;
+use Psr\Log\LoggerInterface;
 use Doctrine\DBAL\DriverManager;
 /**
  * Dossier Repository
@@ -43,9 +44,9 @@ class DossierRepository{
 
     /**
      *  @param array $configuration configuration that should contains MC2 DSN (doctrine compatible)
-     * @param Monolog\Logger $logger
+     * @param Psr\Log\LoggerInterface $logger
      */
-    public function __construct(array $configuration,$logger,$site){
+    public function __construct(array $configuration,LoggerInterface $logger,$site){
         if(isset($configuration['mc2']['doctrine']['dbal']) === false)
             throw new InvalidArgumentException("MC2 DSN was not found in given configuration");
             

@@ -34,7 +34,7 @@ if ($argc < 2) {
     php mc2_mc_to_db_to_csv.php --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> 
 
     DESCRIPTION
-    Extraction des données de MiddleCare (cf. config_db_middlecare.yml) vers base de données locale mc2 (cf. config_db_mc2.yml) puis vers fichier(s) CSV
+    Extraction des données de MiddleCare vers base de données locale mc2 (cf. mc2.yaml) puis vers fichier(s) CSV
     
     OPTIONS
     - site : sls | lrb
@@ -57,7 +57,7 @@ $options = getopt("", $longopts);
 
 $now = new DateTime();
 
-$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yml"));
+$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yaml"));
 $logger = LoggerFactory::create_logger("mc2_mc_to_db_to_csv", __DIR__.'/../log');
 $site = isset($options['site']) ? $options['site'] : 'sls';
 $period = isset($options['period']) ? $options['period'] : 'P1M';

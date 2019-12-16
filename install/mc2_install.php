@@ -27,7 +27,7 @@ if ($argc < 2) {
     echo "Usage : \n
     - Verifier la configuration des connexions vers les bases MiddleCare, mc2 et RedCap :\n
     > php mc2_install.php --check\n
-    - Créer les tables de la base mc2 si elles n'existent pas déja (cf. config_db_mc2.yml pour les noms des tables)\n
+    - Créer les tables de la base mc2 si elles n'existent pas déja (cf. mc2.yaml pour les noms des tables)\n
     > php mc2_install.php --install\n
     - Génerer fichier markdown avec diagramme des tables de la base mc2 :\n
     > php mc2_install.php --yuml\n";
@@ -38,15 +38,15 @@ $longopts  = array("check","install","yuml","site:");
 $options = getopt("", $longopts);
 $now = new DateTime();
 
+$configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yaml"));
 $logger = LoggerFactory::create_logger("install", __DIR__.'/../log');
-$config_db_middlecare = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_middlecare.yml"));
-$config_db_dsp = Yaml::parse(file_get_contents(__DIR__."/../config/config_db_mc2.yml"));
 $site = isset($options["site"]) ? $options["site"] : 'sls';
+$base_url = $configuration['middlecare'][$site]['doc_base_url'];
 
-$mc_repo = new MCRepository($config_db_middlecare[$site],$logger,$site);
-$dossier_repo = new DossierRepository($config_db_dsp,$logger,$site);
-$document_repo = new DocumentRepository($config_db_dsp,$logger,$site,$config_db_middlecare[$site]['doc_base_url']);
-$patient_repo = new PatientRepository($config_db_dsp,$logger);
+$mc_repo = new MCRepository($configuration,$logger,$site);
+$dossier_repo = new DossierRepository($configuration,$logger,$site);
+$document_repo = new DocumentRepository($configuration,$logger,$site,$base_url);
+$patient_repo = new PatientRepository($configuration,$logger);
 
 switch(true){
     case isset($options['check']) : 

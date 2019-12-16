@@ -1,12 +1,13 @@
 <?php
 namespace MC2\Core\CSV;
 use \DateTime;
+use Psr\Log\LoggerInterface;
 class CSVWriter{
 
     private $output_folder = null;
     private $options = null;
     
-    public function __construct($options, $logger){
+    public function __construct($options,LoggerInterface $logger){
 		$this->output_folder =  __DIR__."/../../data";
 		$this->setOptions($options);
 		$this->logger = $logger;

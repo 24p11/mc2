@@ -33,13 +33,9 @@ Installation
 composer install
 ```
 
-- Créer les fichiers de configuration à partir des fichiers template puis configurer les connexions aux bases MiddleCare, mc2 et à l'API RedCap dans les fichiers yml correspondants
+- Créer le fichier de configuration (.yaml) à partir du fichier template (.default) puis configurer les connexions aux bases MiddleCare, mc2 et à l'API RedCap 
 ```bash
-cd config
-cp config_db_middlecare.default config_db_middlecare.yml
-cp config_db_mc2.default config_db_mc2.yml
-cp config_redcap.default config_redcap.yml
-cd ..
+cp config/mc2.default config/mc2.yaml
 ```
 
 - Vérifier la configuration et les accès aux bases de données
@@ -85,7 +81,7 @@ SYNOPSIS
 php mc2_mc_to_db.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin>
 
 DESCRIPTION
-Extraction des données de MiddleCare vers base de données locale mc2 (cf. config_db_middlecare.yml et config_db_mc2.yml)
+Extraction des données de MiddleCare vers base de données locale mc2 (cf. config_db_middlecare.yml et mc2.yaml)
 
 OPTIONS
 - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
@@ -119,7 +115,7 @@ SYNOPSIS
 php mc2_db_to_csv.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--type_doc <doc_type>]
 
 DESCRIPTION
-Extraction des données de MiddleCare (cf. config_db_middlecare.yml) vers base de données locale mc2 (cf. config_db_mc2.yml)
+Extraction des données de MiddleCare vers base de données locale mc2 (cf. mc2.yaml)
 
 OPTIONS
 - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
@@ -160,7 +156,7 @@ SYNOPSIS
 php mc2_db_to_rc.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--long] [--inst <custom_intrument_name>] [--inst_only] [--bydoctype] [--noapicall]
 
 DESCRIPTION
-Extraction de la base de données locale mc2 (cf. config_db_mc2.yml) vers un projet RedCap via l'API RedCap
+Extraction de la base de données locale mc2 (cf. mc2.yaml) vers un projet RedCap via l'API RedCap
 
 OPTIONS
 - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
@@ -182,7 +178,7 @@ EXAMPLES
 - Extraire depuis la base locale le data dictionnary RedCap d'un DSP donné pour un projet longitudinal, avec filtrage des variables/items :
 > php mc2_db_to_rc.php --dict --site sls --dsp DSP96 --long --inst 'Document CarT' --inst_only --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2'
 
-- Extraire les données d'un DSP pour une période donnée depuis la base locale vers fichier(s) CSV RedCap et les envoyer vers l'API RedCap(cf. config_redcap.yml):
+- Extraire les données d'un DSP pour une période donnée depuis la base locale vers fichier(s) CSV RedCap et les envoyer vers l'API RedCap(cf. mc2.yaml):
 > php mc2_db_to_rc.php --site sls --dsp DSP2 --deb 20180101 --fin 20190101 --long --inst_only --inst 'Indicateurs Séno' --items 'DEB_HOSP FIN_HOSP UH VAR1 VAR2 VAR83 VAR84 ...'
 ```
 
@@ -198,7 +194,7 @@ mc2_mc_to_csv.php - YAGNI! Extraction depuis MiddleCare vers fichier(s) CSV
     php mc2_mc_to_csv.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin> [--items <items>] [--type_doc <doc_type>]
 
     DESCRIPTION
-    Extraction des données de MiddleCare (cf. config_db_middlecare.yml) vers base de données locale mc2 (cf. config_db_mc2.yml)
+    Extraction des données de MiddleCare vers base de données locale mc2 (cf. mc2.yaml)
     
     OPTIONS
     - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
@@ -320,7 +316,7 @@ Annexe - Arborescence
 
 ```yml
 /bin            # [MAIN] scripts PHP CLI
-/config         # configuration DB MiddleCare (config_db_middlecare.yml), DB Locale (config_db_mc2.yml) et RedCap (config_redcap.yml)
+/config         # configuration DB MiddleCare, DB Locale et RedCap (mc2.yaml)
 /data           # fichiers output
 /docs           # documentation
 /install        # script PHP CLI d'installation de la DB Locale

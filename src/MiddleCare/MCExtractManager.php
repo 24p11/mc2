@@ -572,14 +572,16 @@ final class MCExtractManager{
 			$this->logger->debug("Loading documents from category: $category");
 			$items = $this->mc_repository->getDSPItemsFromDocumentCategory($dsp_id,$category);
 			$this->logger->debug("Items count : ".count($items));
-			$mc_documents = array_merge($mc_documents,$this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items,$category));
+			$tmp_mc_documents = $this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items,$category);
 			$this->logger->debug("Getting DSP data took ".$now->diff(new DateTime())->format('%H:%I:%S'));
-			$nipros = array_unique(array_column($mc_documents, 'NIPRO'));
-			$this->logger->debug(join(",",$nipros));
 
 			// Delete document and item values
+			$nipros = array_unique(array_column($tmp_mc_documents, 'NIPRO'));
+			$this->logger->debug(join(",",$nipros));
 			$this->document_repository->deleteDocumentsAndItemValues($nipros, $item_names);
 			$this->logger->debug("Deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
+
+			$mc_documents = array_merge($mc_documents,$tmp_mc_documents);
 			
 			// TODO set in configuration
 			$batch_size_document = 1000;
@@ -646,7 +648,7 @@ final class MCExtractManager{
 		$patients = array();
 		// Delete document and item values
 		$nipros = array_unique(array_column($mc_documents, 'NIPRO'));
-		$this->document_repository->deleteDocumentsAndItemValues($nipros, $item_names);
+		$this->document_repository->deleteDocumentsAndItemValues($nipros);
 		$this->logger->debug("Deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
 		
 		// TODO set in configuration

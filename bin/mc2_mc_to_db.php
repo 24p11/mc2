@@ -50,6 +50,8 @@ use MC2\DSP\ItemValue;
 use MC2\DSP\PatientRepository;
 use MC2\DSP\Patient;
 use Symfony\Component\Yaml\Yaml;
+use Monolog\Logger;
+
 
 date_default_timezone_set('Europe/Paris');
 
@@ -94,7 +96,7 @@ $options = getopt("", $longopts);
 $now = new DateTime();
 
 $configuration = Yaml::parse(file_get_contents(__DIR__."/../config/mc2.yaml"));
-$logger = LoggerFactory::create_logger("mc2_mc_to_db", __DIR__.'/../log');
+$logger = LoggerFactory::create_logger("mc2_mc_to_db", __DIR__.'/../log',Logger::DEBUG);
 $site = isset($options["site"]) ? $options["site"] : 'sls';
 $base_url = $configuration['middlecare'][$site]['doc_base_url'];
 

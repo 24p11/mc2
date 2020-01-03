@@ -301,8 +301,8 @@ class DocumentRepository{
         $query_deleted_item_values = "UPDATE ".$this->getItemValueTable()." SET deleted = 1 WHERE site = :site AND nipro IN(:nipros) {$query_items}";
         $values = array('site' => $this->site, 'nipros' => $nipros);
         $types = array('site' => PDO::PARAM_STR, 'nipros' => Connection::PARAM_INT_ARRAY);
-        $stmt = $this->db->executeQuery($query_deleted_document,$values,$types);
-        $stmt = $this->db->executeQuery($query_deleted_item_values,$values,$types);
+        $stmt = $this->db->executeUpdate($query_deleted_document,$values,$types);
+        $stmt = $this->db->executeUpdate($query_deleted_item_values,$values,$types);
     }
 
     // -------- Table Creation

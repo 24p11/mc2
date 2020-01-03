@@ -81,7 +81,7 @@ SYNOPSIS
 php mc2_mc_to_db.php [--dict] --site <sls|lrb> --dsp <dsp_id> --deb <date_debut> --fin <date_fin>
 
 DESCRIPTION
-Extraction des données de MiddleCare vers base de données locale mc2 (cf. config_db_middlecare.yml et mc2.yaml)
+Extraction des données de MiddleCare vers base de données locale mc2 (cf. mc2.yaml)
 
 OPTIONS
 - dict (optionnal) : ne récupérer que les dictionnaires (et non les données)
@@ -253,10 +253,10 @@ php bin/mc2_db_to_rc.php --site sls --dict --dsp DSP96 --long --inst 'Indicateur
 
 ![Ecran RedCap : upload data dictionnary](docs/images/redcap/rc_create_project_02_upload_data_dict.png)
 
-6 - Définir les events et désigner les instruments associés puis les renseigner dans config_redcap.yml
+6 - Définir les events et désigner les instruments associés puis les renseigner dans mc2.yaml
 
 ```yml
-# config_redcap.yml
+# mc2.yaml
 redcap:
     ...
     # Longitudinal project events
@@ -283,12 +283,12 @@ redcap:
 ![Ecran RedCap : activer les instruments repeatable](docs/images/redcap/rc_create_project_07_repeat_instruments_02.png)
 
 
-8 - Générer API Token puis l'ajouter dans config_redcap.yml (Applications > API)
+8 - Générer API Token puis l'ajouter dans mc2.yaml (Applications > API)
 
 ![Ecran RedCap : generer API Token](docs/images/redcap/rc_create_project_08_get_api_token.png)
 
-```yml
-# config_redcap.yml
+```yaml
+# mc2.yaml
 redcap:
     ...
     api_token: '12345678978798754656465465465'
@@ -308,7 +308,6 @@ TODO
 
 - refactoring : tables OMOP friendly
 - doc : ajouter CSV anonymisés d'exemple à l'annexe Format CSV
-- mc2_db_to_csv : modifier l'option --type_doc pour pouvoir filter plusieurs type de document 
 
 
 Annexe - Arborescence

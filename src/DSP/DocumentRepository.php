@@ -346,7 +346,7 @@ class DocumentRepository{
             `site` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `page_nom` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `var` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-            `val` text COLLATE utf8_unicode_ci,
+            `val` longtext COLLATE utf8_unicode_ci,
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,

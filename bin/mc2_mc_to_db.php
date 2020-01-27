@@ -52,7 +52,6 @@ use MC2\DSP\Patient;
 use Symfony\Component\Yaml\Yaml;
 use Monolog\Logger;
 
-
 date_default_timezone_set('Europe/Paris');
 
 if ($argc < 2) {

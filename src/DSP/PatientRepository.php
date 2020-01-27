@@ -135,7 +135,8 @@ class PatientRepository{
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
-            PRIMARY KEY (`patient_id`,`ipp`)
+            PRIMARY KEY (`patient_id`,`ipp`),
+            KEY `INDEX_PATIENT_ID` (`patient_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;
     }

@@ -263,7 +263,7 @@ class DossierRepository{
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
-            PRIMARY KEY (`dossier_id`),
+            PRIMARY KEY (`dossier_id`,`site`),
             UNIQUE KEY `dossier_id_UNIQUE` (`dossier_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;
@@ -293,7 +293,8 @@ class DossierRepository{
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
-            PRIMARY KEY (`item_id`,`dossier_id`)
+            PRIMARY KEY (`item_id`,`dossier_id`,`site`),
+            KEY `page_nom_index` (`page_nom`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;
     }
@@ -309,7 +310,7 @@ class DossierRepository{
             `created` DATETIME NULL ,
             `modified` DATETIME NULL ,
             `version` INT NULL ,
-            PRIMARY KEY (`type_document`, `dossier_id`, `site`) 
+            PRIMARY KEY (`type_document`, `dossier_id`, `site`,`page_libelle`) 
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;
     }

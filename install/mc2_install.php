@@ -62,6 +62,7 @@ switch(true){
         $logger->info("creation table ".$document_repo->getCreateTableItemValueQuery()." : ". ($document_repo->createTableItemValue() ? "successful" : "failed"));
         $logger->info("creation table ".$document_repo->getCreateTableDocumentQuery()." : ". ($document_repo->createTableDocument() ? "successful" : "failed"));
         $logger->info("creation table ".$dossier_repo->getCreateTableItemQuery()." : ". ($dossier_repo->createTableItem() ? "successful" : "failed"));
+        $logger->info("creation table ".$dossier_repo->getCreateTablePageQuery()." : ". ($dossier_repo->createTablePage() ? "successful" : "failed"));
         $logger->info("creation table ".$dossier_repo->getCreateTableDossierQuery()." : ". ($dossier_repo->createTableDossier() ? "successful" : "failed"));
         break;
     case isset($options['yuml']) : 
@@ -73,6 +74,7 @@ switch(true){
         $schema .= $document_repo->getCreateTableItemValueQuery()."\n";
         $schema .= $document_repo->getCreateTableDocumentQuery()."\n";
         $schema .= $dossier_repo->getCreateTableItemQuery()."\n";
+        $schema .= $dossier_repo->getCreateTablePageQuery()."\n";
         $schema .= $dossier_repo->getCreateTableDossierQuery()."\n";
 
         // generate the yuml diagram definition

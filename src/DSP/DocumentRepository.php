@@ -351,7 +351,13 @@ class DocumentRepository{
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
             `deleted` tinyint(4) DEFAULT '0',
-            PRIMARY KEY (`nipro`,`patient_id`,`dossier_id`,`var`)
+            PRIMARY KEY (`nipro`,`patient_id`,`dossier_id`,`var`,`site`)
+            KEY `INDEX_NIP` (`patient_id`),
+            KEY `INDEX_PAGE` (`page_nom`,`dossier_id`,`deleted`,`patient_id`),
+            KEY `INDEX_VAL` (`var`,`nipro`,`deleted`),
+            KEY `INDEX_SITE` (`site`),
+            KEY `INDEX_NIPRO` (`nipro`),
+            FULLTEXT KEY `FULLTEXT_VAL` (`val`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;
     }

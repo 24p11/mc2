@@ -19,37 +19,63 @@ class DocumentRepository{
     const DEFAULT_ITEM_VALUE_TABLE = "mcdsp_item_value";
     const ITEM_VALUE_COLUMNS = "nipro,patient_id,dossier_id,site,page_nom,var,val,created,modified,version,deleted";// = *
 
+    const DEFAULT_ITEM_TABLE = "mcdsp_item";
+
     private $db = null;
     private $logger;
     private $site = null;
 
     private $document_table = null;
     private $item_value_table = null;
+    private $item_table = null;
 
     public $base_url = '';
 
     public function getDocumentTable(){
-        return ($this->document_table === null) ? self::DEFAULT_DOCUMENT_TABLE : $this->document_table;
+        return $this->document_table;
+    }
+
+    public function setDocumentTable($document_table){
+        $this->document_table = $document_table === null ? self::DEFAULT_DOCUMENT_TABLE : $document_table;
     }
 
     public function getItemValueTable(){
-        return ($this->item_value_table === null) ? self::DEFAULT_ITEM_VALUE_TABLE : $this->item_value_table;
+        return $this->item_value_table;
+    }
+    
+    public function setItemValueTable($item_value_table){
+        $this->item_value_table = $item_value_table === null ? self::DEFAULT_ITEM_VALUE_TABLE : $item_value_table;
+    }
+
+    public function getItemTable(){
+        return $this->item_table;
+    }
+
+    public function setItemTable($item_table){
+        $this->item_table = $item_table === null ? self::DEFAULT_ITEM_TABLE : $item_table;
+    }
+
+    public function setSite($site){
+        $this->site = $site;
+    }
+
+    public function setDocBaseURL($doc_base_url){
+        $this->base_url = $doc_base_url;
     }
 
     /**
      * @param array $configuration configuration that should contains MC2 DSN (doctrine compatible)
      * @param Psr\Log\LoggerInterface $logger
      */
-    public function __construct(array $configuration,LoggerInterface $logger,$site,$doc_base_url){
+    public function __construct(array $configuration,LoggerInterface $logger){
         if(isset($configuration['mc2']['doctrine']['dbal']) === false)
             throw new InvalidArgumentException("MC2 DSN was not found in given configuration");
             
         $this->db = DriverManager::getConnection($configuration['mc2']['doctrine']['dbal']);
-        $this->document_table = $configuration['mc2']['tables']['document'];
-        $this->item_value_table = $configuration['mc2']['tables']['item_value'];
-        $this->base_url = $doc_base_url;
+        $this->setDocumentTable($configuration['mc2']['tables']['document']);
+        $this->setItemValueTable($configuration['mc2']['tables']['item_value']);
+        $this->setItemTable($configuration['mc2']['tables']['item']);
         $this->logger = $logger;
-        $this->site = $site;
     }
 
     public function checkConnection(){
@@ -64,29 +90,6 @@ class DocumentRepository{
     }
 
     // -------- Query
-
-    public function findDocument($nipro){
-        $query = "SELECT ".self::DOCUMENT_COLUMNS." FROM ".$this->getDocumentTable()." WHERE nipro = :nipro AND site = :site AND deleted = 0 ORDER BY nipro";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindValue("nipro", $nipro);
-        $stmt->bindValue("site", $this->site);
-        $stmt->execute();
-        $result = array();
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC))
-            $result[] = new Document($this->base_url,$row);
-        return $result;
-    }
-
-    public function findAllDocument(){
-        $query = "SELECT ".self::DOCUMENT_COLUMNS." FROM ".$this->getDocumentTable()." WHERE deleted = 0 AND site = :site ORDER BY nipro";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindValue("site", $this->site);
-        $stmt->execute();
-        $result = array();
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC))
-            $result[] = new Document($this->base_url,$row);
-        return $result;
-    }
 
     public function findDocumentByDossierId($dossier_id,$date_debut, $date_fin,array $patient_ids = null){
         $query_patients = ($patient_ids === null || count($patient_ids) < 1) 
@@ -294,6 +297,36 @@ class DocumentRepository{
         return $count;
     }
 
+    public function updateDocumentsFullText(array $nipros){
+        if($nipros === null || count($nipros) < 1)
+            return null;
+
+        $query_in_nipros = "AND doc.nipro in(".join(',',array_map(function($v){ return "'".$v."'"; },$nipros)).")";
+        $sql = "SELECT DISTINCT doc.nipro, group_concat(distinct concat('[',it.page_libelle,'.',it.libelle_bloc,'|',item.var,']=',item.val) separator '; ') as fulltxt
+            FROM ".$this->getDocumentTable()." as doc 
+            JOIN ".$this->getItemValueTable()." as item ON item.nipro = doc.nipro AND item.deleted = '0'
+            JOIN ".$this->getItemTable()." as it ON it.dossier_id = item.dossier_id AND it.site = item.site AND it.item_id = item.var
+            WHERE doc.provisoire = '0' AND doc.deleted = '0'
+            {$query_in_nipros}";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $result = [];
+        while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            $row['fulltxt'] = html_entity_decode(strip_tags(str_replace(["<br>","<br />","\r\n","\r"]," ",$row['fulltxt'])));
+            $result[] = $row;
+        }
+        $count = 0;
+        foreach($result as $r){
+            $query_update_text = "UPDATE ".$this->getDocumentTable()." SET text = :text WHERE deleted = 0 AND nipro = :nipro";
+            $stmt = $this->db->prepare($query_update_text); 
+            $stmt->bindValue('text', $r['fulltxt']);
+            $stmt->bindValue('nipro', $r['nipro']);
+            $count += $stmt->execute();
+        }
+        return $count;
+    }
+
     public function deleteDocumentsAndItemValues(array $nipros, array $item_names = null){
         $query_items = ($item_names === null || count($item_names) < 1) 
             ? "" : "AND var in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
@@ -326,6 +359,7 @@ class DocumentRepository{
             `provisoire` tinyint(4) DEFAULT NULL,
             `categorie` int(11) DEFAULT NULL,
             `service` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+            `text` mediumtext COLLATE utf8_unicode_ci,
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
@@ -333,8 +367,9 @@ class DocumentRepository{
             PRIMARY KEY (`nipro`,`dossier_id`,`site`),
             KEY `INDEX1` (`nipro`,`dossier_id`,`date_creation`,`patient_id`,`type`,`deleted`),
             KEY `INDEX_SITE` (`site`),
-            KEY `INDEX_NIPRO` (`nipro`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+            KEY `INDEX_NIPRO` (`nipro`),
+            FULLTEXT KEY `FULLTEXT_TEXT` (`text`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
         return $query;
     }
 
@@ -346,12 +381,18 @@ class DocumentRepository{
             `site` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `page_nom` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `var` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-            `val` text COLLATE utf8_unicode_ci,
+            `val` longtext COLLATE utf8_unicode_ci,
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
             `deleted` tinyint(4) DEFAULT '0',
-            PRIMARY KEY (`nipro`,`patient_id`,`dossier_id`,`var`)
+            PRIMARY KEY (`nipro`,`patient_id`,`dossier_id`,`var`,`site`)
+            KEY `INDEX_NIP` (`patient_id`),
+            KEY `INDEX_PAGE` (`page_nom`,`dossier_id`,`deleted`,`patient_id`),
+            KEY `INDEX_VAL` (`var`,`nipro`,`deleted`),
+            KEY `INDEX_SITE` (`site`),
+            KEY `INDEX_NIPRO` (`nipro`),
+            FULLTEXT KEY `FULLTEXT_VAL` (`val`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;
     }

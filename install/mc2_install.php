@@ -43,9 +43,11 @@ $logger = LoggerFactory::create_logger("install", __DIR__.'/../log');
 $site = isset($options["site"]) ? $options["site"] : 'sls';
 $base_url = $configuration['middlecare'][$site]['doc_base_url'];
 
-$mc_repo = new MCRepository($configuration,$logger,$site);
-$dossier_repo = new DossierRepository($configuration,$logger,$site);
-$document_repo = new DocumentRepository($configuration,$logger,$site,$base_url);
+$mc_repo = new MCRepository($configuration,$logger);
+$mc_repo->connect($site);
+$dossier_repo = new DossierRepository($configuration,$logger);
+$dossier_repo->setSite($site);
+$document_repo = new DocumentRepository($configuration,$logger);
 $patient_repo = new PatientRepository($configuration,$logger);
 
 switch(true){
@@ -62,6 +64,7 @@ switch(true){
         $logger->info("creation table ".$document_repo->getCreateTableItemValueQuery()." : ". ($document_repo->createTableItemValue() ? "successful" : "failed"));
         $logger->info("creation table ".$document_repo->getCreateTableDocumentQuery()." : ". ($document_repo->createTableDocument() ? "successful" : "failed"));
         $logger->info("creation table ".$dossier_repo->getCreateTableItemQuery()." : ". ($dossier_repo->createTableItem() ? "successful" : "failed"));
+        $logger->info("creation table ".$dossier_repo->getCreateTablePageQuery()." : ". ($dossier_repo->createTablePage() ? "successful" : "failed"));
         $logger->info("creation table ".$dossier_repo->getCreateTableDossierQuery()." : ". ($dossier_repo->createTableDossier() ? "successful" : "failed"));
         break;
     case isset($options['yuml']) : 
@@ -73,6 +76,7 @@ switch(true){
         $schema .= $document_repo->getCreateTableItemValueQuery()."\n";
         $schema .= $document_repo->getCreateTableDocumentQuery()."\n";
         $schema .= $dossier_repo->getCreateTableItemQuery()."\n";
+        $schema .= $dossier_repo->getCreateTablePageQuery()."\n";
         $schema .= $dossier_repo->getCreateTableDossierQuery()."\n";
 
         // generate the yuml diagram definition

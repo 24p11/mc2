@@ -17,7 +17,11 @@ class PatientRepository{
     private $patient_table = null;
 
     public function getPatientTable(){
-        return ($this->patient_table === null) ? self::DEFAULT_PATIENT_TABLE : $this->patient_table;
+        return $this->patient_table;
+    }
+
+    public function setPatientTable($patient_table){
+        $this->patient_table = $patient_table === null ? self::DEFAULT_PATIENT_TABLE : $patient_table;
     }
 
     /**
@@ -29,7 +33,7 @@ class PatientRepository{
             throw new InvalidArgumentException("MC2 DSN was not found in given configuration");
             
         $this->db = DriverManager::getConnection($configuration['mc2']['doctrine']['dbal']);
-        $this->patient_table = $configuration['mc2']['tables']['patient'];
+        $this->setPatientTable($configuration['mc2']['tables']['patient']);
         $this->logger = $logger;
     }
 
@@ -135,7 +139,8 @@ class PatientRepository{
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
-            PRIMARY KEY (`patient_id`,`ipp`)
+            PRIMARY KEY (`patient_id`,`ipp`),
+            KEY `INDEX_PATIENT_ID` (`patient_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;
     }

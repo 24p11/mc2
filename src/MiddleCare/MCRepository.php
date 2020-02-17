@@ -18,6 +18,7 @@ use MC2\Core\Helper\DateHelper;
 // ================================================================================
 class MCRepository{
 
+    private $db_configuration;
     private $db_middlecare = null;
     private $logger;
     private $site;
@@ -26,14 +27,16 @@ class MCRepository{
      * @param array $configuration configuration that should contains MiddleCare DSN(s) (compatible with Doctrine)
      * @param Psr\Log\LoggerInterface $logger
      */
-    public function __construct($configuration,LoggerInterface $logger,$site){
-        if(isset($configuration['middlecare'][$site]['doctrine']['dbal']) === false)
-            throw new InvalidArgumentException("MiddleCare DSN for site '$site' was not found in given configuration");
-            
-        $site_db_config = $configuration['middlecare'][$site]['doctrine']['dbal'];
-        $this->db_middlecare = DriverManager::getConnection($site_db_config);
+    public function __construct($configuration,LoggerInterface $logger){
+        $this->db_configuration = $configuration['middlecare'];
         $this->logger = $logger;
+    }
+
+    public function connect($site){
         $this->site = $site;
+        if(isset($this->db_configuration[$site]['doctrine']['dbal']) === false)
+            throw new InvalidArgumentException("MiddleCare DSN for site '$site' was not found in given configuration");
+        $this->db_middlecare = DriverManager::getConnection($this->db_configuration[$site]['doctrine']['dbal']);
     }
 
     public function checkConnection(){

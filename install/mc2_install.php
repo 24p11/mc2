@@ -43,9 +43,11 @@ $logger = LoggerFactory::create_logger("install", __DIR__.'/../log');
 $site = isset($options["site"]) ? $options["site"] : 'sls';
 $base_url = $configuration['middlecare'][$site]['doc_base_url'];
 
-$mc_repo = new MCRepository($configuration,$logger,$site);
-$dossier_repo = new DossierRepository($configuration,$logger,$site);
-$document_repo = new DocumentRepository($configuration,$logger,$site,$base_url);
+$mc_repo = new MCRepository($configuration,$logger);
+$mc_repo->connect($site);
+$dossier_repo = new DossierRepository($configuration,$logger);
+$dossier_repo->setSite($site);
+$document_repo = new DocumentRepository($configuration,$logger);
 $patient_repo = new PatientRepository($configuration,$logger);
 
 switch(true){

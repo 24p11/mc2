@@ -31,31 +31,46 @@ class DossierRepository{
     private $page_table = null;
 
     public function getDossierTable(){
-        return ($this->dossier_table === null) ? self::DEFAULT_DOSSIER_TABLE : $this->dossier_table;
+        return $this->dossier_table;
+    }
+
+    public function setDossierTable($dossier_table){
+        $this->dossier_table = $dossier_table === null ? self::DEFAULT_DOSSIER_TABLE : $dossier_table;
     }
 
     public function getItemTable(){
-        return ($this->item_table === null) ? self::DEFAULT_ITEM_TABLE : $this->item_table;
+        return $this->item_table;
+    }
+
+    public function setItemTable($item_table){
+        $this->item_table = $item_table === null ? self::DEFAULT_ITEM_TABLE : $item_table;
     }
 
     public function getPageTable(){
-        return ($this->page_table === null) ? self::DEFAULT_PAGE_TABLE : $this->page_table;
+        return $this->page_table;
+    }
+
+    public function setPageTable($page_table){
+        $this->page_table = $page_table === null ? self::DEFAULT_PAGE_TABLE : $page_table;
+    }
+
+    public function setSite($site){
+        $this->site = $site;
     }
 
     /**
      *  @param array $configuration configuration that should contains MC2 DSN (doctrine compatible)
      * @param Psr\Log\LoggerInterface $logger
      */
-    public function __construct(array $configuration,LoggerInterface $logger,$site){
+    public function __construct(array $configuration,LoggerInterface $logger){
         if(isset($configuration['mc2']['doctrine']['dbal']) === false)
             throw new InvalidArgumentException("MC2 DSN was not found in given configuration");
             
         $this->db = DriverManager::getConnection($configuration['mc2']['doctrine']['dbal']);
-        $this->dossier_table = $configuration['mc2']['tables']['dossier'];
-        $this->item_table = $configuration['mc2']['tables']['item'];
-        $this->page_table = $configuration['mc2']['tables']['page'];
-        $this->logger = $logger;
-        $this->site = $site;
+        $this->setDossierTable($configuration['mc2']['tables']['dossier']);
+        $this->setItemTable($configuration['mc2']['tables']['item']);
+        $this->setPageTable($configuration['mc2']['tables']['page']);
+        $this->logger = $logger;   
     }
 
     public function checkConnection(){

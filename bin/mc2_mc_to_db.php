@@ -99,9 +99,13 @@ $logger = LoggerFactory::create_logger("mc2_mc_to_db", __DIR__.'/../log',Logger:
 $site = isset($options["site"]) ? $options["site"] : 'sls';
 $base_url = $configuration['middlecare'][$site]['doc_base_url'];
 
-$mc_repo = new MCRepository($configuration,$logger,$site);
-$dossier_repo = new DossierRepository($configuration,$logger,$site);
-$document_repo = new DocumentRepository($configuration,$logger,$site,$base_url);
+$mc_repo = new MCRepository($configuration,$logger);
+$mc_repo->connect($site);
+$dossier_repo = new DossierRepository($configuration,$logger);
+$dossier_repo->setSite($site);
+$document_repo = new DocumentRepository($configuration,$logger);
+$document_repo->setSite($site);
+$document_repo->setDocBaseURL($base_url);
 $patient_repo = new PatientRepository($configuration,$logger);
 $mc_extracter = new MCExtractManager(MCExtractManager::SRC_MIDDLECARE,$site,$mc_repo,$dossier_repo,$document_repo,$patient_repo,null,$logger);
 
@@ -127,7 +131,8 @@ if(isset($options['dict'])){
         $dsp_id = $options['dsp'];
         $nipro = $options['nipro'];
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $mc_extracter->importDSPDocumentData($dsp_id, $nipro, $item_names);
+        //$mc_extracter->importDSPDocumentData($dsp_id, $nipro, $item_names);
+        $document_repo->updateDocumentsFullText([$nipro]);
     }else{
         $logger->info("Unknown parameters",array('options' => $options));
     }

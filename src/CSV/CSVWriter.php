@@ -63,8 +63,7 @@ class CSVWriter{
             foreach ($lines as $line) {
                 $clean_line = array();
                 foreach($line as $key => $val){
-                    $clean_string = str_replace("\r\n"," ",$val);
-                    $clean_string = str_replace("\r"," ",$clean_string);
+                    $clean_string = str_replace(["\r\n","\r"]," ",$val);
                     if($this->options->remove_html === true){
                         $clean_string = strip_tags($clean_string);
                     }

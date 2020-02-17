@@ -633,7 +633,9 @@ final class MCExtractManager{
 			$this->logger->debug("Upserted ".count($documents)." documents");
 			$this->logger->debug("Upserted ".count($item_values)." item values");
 			$this->logger->debug("Upserted ".count($patients)." patients");
-			// break;
+
+			$this->document_repository->updateDocumentsFullText($nipros);
+			$this->logger->debug("Updated ".count($nipros)." documents fulltext");
 		}
 	}
 
@@ -701,6 +703,9 @@ final class MCExtractManager{
 		$this->logger->debug("Upserted ".count($documents)." documents");
 		$this->logger->debug("Upserted ".count($item_values)." item values");
 		$this->logger->debug("Upserted ".count($patients)." patients");
+		
+		$this->document_repository->updateDocumentsFullText($nipros);
+		$this->logger->debug("Updated ".count($nipros)." documents fulltext");
 	}
 
 	// ---- CSV Helpers

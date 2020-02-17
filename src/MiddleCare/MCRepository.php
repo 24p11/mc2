@@ -32,6 +32,10 @@ class MCRepository{
         $this->logger = $logger;
     }
 
+    public function getAvailableSites(){
+        return array_keys($this->db_configuration);
+    }
+
     public function connect($site){
         $this->site = $site;
         if(isset($this->db_configuration[$site]['doctrine']['dbal']) === false)

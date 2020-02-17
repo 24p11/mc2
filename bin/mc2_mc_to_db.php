@@ -131,8 +131,7 @@ if(isset($options['dict'])){
         $dsp_id = $options['dsp'];
         $nipro = $options['nipro'];
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        //$mc_extracter->importDSPDocumentData($dsp_id, $nipro, $item_names);
-        $document_repo->updateDocumentsFullText([$nipro]);
+        $mc_extracter->importDSPDocumentData($dsp_id, $nipro, $item_names);
     }else{
         $logger->info("Unknown parameters",array('options' => $options));
     }

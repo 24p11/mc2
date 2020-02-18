@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 class DocumentRepository{
 
     const DEFAULT_DOCUMENT_TABLE = "mcdsp_document";
-    const DOCUMENT_COLUMNS = "nipro,patient_id,dossier_id,site,type,venue,patient_age,patient_poids,patient_taille,date_creation,date_modification,revision,extension,operateur,provisoire,categorie,service,created,modified,version,deleted";// = *
+    const DOCUMENT_COLUMNS = "nipro,patient_id,dossier_id,site,type,venue,patient_age,patient_poids,patient_taille,date_creation,date_modification,revision,extension,operateur,provisoire,categorie,service,text,created,modified,version,deleted";// = *
 
     const DEFAULT_ITEM_VALUE_TABLE = "mcdsp_item_value";
     const ITEM_VALUE_COLUMNS = "nipro,patient_id,dossier_id,site,page_nom,var,val,created,modified,version,deleted";// = *
@@ -195,8 +195,8 @@ class DocumentRepository{
 
     public function upsertDocument($document){
         $query = "INSERT INTO ".$this->getDocumentTable()." (".self::DOCUMENT_COLUMNS.") 
-            VALUES(:document_id, :patient_id, :dossier_id, :site, :type, :venue, :patient_age, :patient_poids, :patient_taille, :date_creation, :date_modification, :revision, :extension, :operateur, NOW(), NOW(), 0, 0)
-            ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), provisoire = VALUES(provisoire), categorie = VALUES(categorie), service = VALUES(service), modified = VALUES(modified), version = version + 1, deleted = 0";
+            VALUES(:document_id, :patient_id, :dossier_id, :site, :type, :venue, :patient_age, :patient_poids, :patient_taille, :date_creation, :date_modification, :revision, :extension, :operateur, :provisoire, :categorie, :service,'', NOW(), NOW(), 0, 0)
+            ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), provisoire = VALUES(provisoire), categorie = VALUES(categorie), service = VALUES(service), text = VALUES(text), modified = VALUES(modified), version = version + 1, deleted = 0";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue('document_id', $document->id);
         $stmt->bindValue('patient_id', $document->patient_id);
@@ -244,11 +244,11 @@ class DocumentRepository{
                 .$document->provisoire."','"
                 .$document->categorie."','"
                 .$document->service."',"
-                ." NOW(), NOW(), 0, 0)";
+                ."'', NOW(), NOW(), 0, 0)";
             $count_document--;
             $query .= ($count_document === 0) ? "" : ",";
         }
-        $query .= " ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), provisoire = VALUES(provisoire), categorie = VALUES(categorie), service = VALUES(service), modified = VALUES(modified), version = version + 1, deleted = 0";
+        $query .= " ON DUPLICATE KEY UPDATE patient_id = VALUES(patient_id), type = VALUES(type), venue = VALUES(venue), patient_age = VALUES(patient_age), patient_poids = VALUES(patient_poids), patient_taille = VALUES(patient_taille), date_creation = VALUES(date_creation), date_modification = VALUES(date_modification), revision = VALUES(revision), extension = VALUES(extension), operateur = VALUES(operateur), provisoire = VALUES(provisoire), categorie = VALUES(categorie), service = VALUES(service),  text = VALUES(text), modified = VALUES(modified), version = version + 1, deleted = 0";
         
         $stmt = $this->db->prepare($query); 
         $count = $stmt->execute();

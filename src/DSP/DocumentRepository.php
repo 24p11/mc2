@@ -307,7 +307,8 @@ class DocumentRepository{
             JOIN ".$this->getItemValueTable()." as item ON item.nipro = doc.nipro AND item.deleted = '0'
             JOIN ".$this->getItemTable()." as it ON it.dossier_id = item.dossier_id AND it.site = item.site AND it.item_id = item.var
             WHERE doc.provisoire = '0' AND doc.deleted = '0'
-            {$query_in_nipros}";
+            {$query_in_nipros}
+            GROUP BY doc.nipro";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute();

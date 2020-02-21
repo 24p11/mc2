@@ -206,7 +206,7 @@ class DossierRepository{
             ON DUPLICATE KEY UPDATE nom = VALUES(nom), libelle = VALUES(libelle), uhs = VALUES(uhs), modified = VALUES(modified), version = version + 1";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue("dossier_id", $dossier->id);
-        $stmt->bindValue("site", $this->site);
+        $stmt->bindValue("site", $dossier->site);
         $stmt->bindValue("nom", $dossier->nom);
         $stmt->bindValue("libelle", $dossier->libelle);
         $stmt->bindValue("uhs", $dossier->uhs);
@@ -271,16 +271,15 @@ class DossierRepository{
     public function getCreateTableDossierQuery(){
         $query = "CREATE TABLE IF NOT EXISTS ".$this->getDossierTable()." (
             `dossier_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-            `site` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+            `site` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             `nom` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `libelle` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `uhs` text COLLATE utf8_unicode_ci,
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,
-            PRIMARY KEY (`dossier_id`,`site`),
-            UNIQUE KEY `dossier_id_UNIQUE` (`dossier_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+            PRIMARY KEY (`dossier_id`,`site`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
         return $query;
     }
 
@@ -288,7 +287,7 @@ class DossierRepository{
         $query = "CREATE TABLE IF NOT EXISTS ".$this->getItemTable()." (
             `item_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             `dossier_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-            `site` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+            `site` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             `page_nom` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `page_libelle` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `bloc_no` int(11) DEFAULT NULL,

@@ -6,24 +6,19 @@ use Psr\Log\LoggerInterface;
 use MC2\Core\CSV\CSVFile;
 use MC2\Core\Helper\DateHelper;
 use MC2\Core\Helper\ArrayHelper;
-use MC2\DSP\DossierRepository;
 use MC2\DSP\Dossier;
-use MC2\DSP\DocumentRepository;
 use MC2\DSP\Document;
 use MC2\DSP\ItemValue;
-use MC2\DSP\PatientRepository;
 use MC2\DSP\Patient;
 use MC2\DSP\Page;
 use MC2\DSP\Item;
 use MC2\RedCap\RCDictionnary;
-use MC2\RedCap\RCItem;
-use MC2\RedCap\RCInstrument;
 /**
  * MCExtractManager
  * 
  * - importAllDSPMetadata()
  * - importDSPDictionnary($dsp_id)
- * - importDSPData($dsp_id, $date_debut, $date_fin, array $item_names = null)
+ * - importDSPData($dsp_id, $date_debut, $date_fin, array $item_names = null,$date_update = false)
  * - importDSPDocumentData(dsp_id, $nipro, array $item_names = null)
  * 
  * - exportAllDSPMetadataToCSV()
@@ -103,8 +98,10 @@ final class MCExtractManager{
 	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
 	 * @param \DateTime $date_debut
 	 * @param \DateTime $date_fin
+	 * @param array $item_names
+	 * @param boolean $date_update si true ne prendre que les données mise à jour entre date_début et date_fin (sinon on se base sur la date de creation du document)
 	 */
-	public function importDSPData($dsp_id, $date_debut, $date_fin, array $item_names = null){
+	public function importDSPData($dsp_id, $date_debut, $date_fin, array $item_names, $date_update = false){
 		$log_info = array(
 			'site' => $this->site, 
 			'dsp_id' => $dsp_id,
@@ -115,17 +112,17 @@ final class MCExtractManager{
 		$this->logger->info("Importing DSP data",$log_info);
 		$interval_max = new DateInterval("P1M");// 1 mois = P1M, 2 mois = P2M, 60 jours =  P60D
 		if($date_debut->diff($date_fin) < $interval_max){
-			$this->loadDSPDataFromMCtoDB($dsp_id, $date_debut, $date_fin,$item_names);
+			$this->loadDSPDataFromMCtoDB($dsp_id, $date_debut, $date_fin,$item_names, $date_update);
 		}else{
 			$date1 = clone $date_debut;
 			$date2 = clone $date1;
 			$date2->add($interval_max);
 			while($date2 < $date_fin){
-				$this->loadDSPDataFromMCtoDB($dsp_id, $date1, $date2,$item_names);
+				$this->loadDSPDataFromMCtoDB($dsp_id, $date1, $date2,$item_names, $date_update);
 				$date1 = clone $date2;
 				$date2->add($interval_max);
 			}
-			$this->loadDSPDataFromMCtoDB($dsp_id, $date1, $date_fin,$item_names);
+			$this->loadDSPDataFromMCtoDB($dsp_id, $date1, $date_fin,$item_names, $date_update);
 		}
 		$this->logger->info("Imported DSP data",$log_info);
 	}
@@ -295,6 +292,7 @@ final class MCExtractManager{
 		$this->logger->info("Exporting RC data by patient from local DB to CSV",$log_info);
 
 		// Get RC dictionnary
+		$rc_dictionnary = null;
 		if($rc_project->event_as_document_type === false){
 			$mc_items = $this->getItems($dsp_id);
 			$rc_dictionnary = RCDictionnary::createFromItemsAndRCProject($dsp_id, $mc_items, $rc_project);
@@ -329,7 +327,7 @@ final class MCExtractManager{
 			if($rc_project->longitudinal === false){
 				foreach($mc_data as $data){
 					$rc_data[] = ArrayHelper::reorderColumns(
-						$this->transcodeDSPDataToRedcapData($data,$rc_dictionnary),
+						$this->transcodeDSPDataToRedcapData($data,$rc_dictionnary,$rc_project->event_as_document_type),
 						$data_column_names
 					);
 				}
@@ -541,10 +539,10 @@ final class MCExtractManager{
 		return $item_infos;
 	}
 
-	private function exportDSPDataToCSVChunck($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null){
+	private function exportDSPDataToCSVChunck($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null, $date_update = false){
 		if($this->isSourceMiddleCare()){
 			$items = $this->mc_repository->getDSPItems($dsp_id,$item_names,$page_name);
-			$data = $this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items);
+			$data = $this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items, $date_update);
 		}else{
 			$items = $this->dossier_repository->findItemByDossierId($dsp_id,$item_names);
 			$documents = $this->document_repository->findDocumentWithItemValues($dsp_id,$date_debut,$date_fin,$item_names,$page_name,null,$type_doc);
@@ -562,7 +560,7 @@ final class MCExtractManager{
 		return $file_name;
 	}
 	
-	private function loadDSPDataFromMCtoDB($dsp_id, $date_debut, $date_fin, array $item_names = null){
+	private function loadDSPDataFromMCtoDB($dsp_id, $date_debut, $date_fin, array $item_names, $date_update = false){
 		$this->logger->debug("loadDSPDataFromMCtoDB ".$date_debut->format(DateHelper::MYSQL_FORMAT)." to ".$date_fin->format(DateHelper::MYSQL_FORMAT));
 		$now = new DateTime();
 		// get documents by category 
@@ -572,7 +570,7 @@ final class MCExtractManager{
 			$this->logger->debug("Loading documents from category: $category");
 			$items = $this->mc_repository->getDSPItemsFromDocumentCategory($dsp_id,$category);
 			$this->logger->debug("Items count : ".count($items));
-			$tmp_mc_documents = $this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items,$category);
+			$tmp_mc_documents = $this->mc_repository->getDSPData($dsp_id,$date_debut,$date_fin,$items,$category,$date_update);
 			$this->logger->debug("Getting DSP data took ".$now->diff(new DateTime())->format('%H:%I:%S'));
 
 			// Delete document and item values

@@ -300,7 +300,7 @@ class MCRepository{
      * @param string $category
      * @return array [NIPRO,IPP,NIP,NOM,PRENOM,DATNAI,SEXE,AGE,POIDS,TAILLE,TYPE_EXAM,VENUE,DATE_EXAM,DATE_MAJ,OPER,REVISION,EXTENSION,CATEG,CR_PROVISOIRE,SERVICE,...ITEMS DU DSP...]
      */
-    public function getDSPData($dsp_id, $date_debut, $date_fin, array $items, $category = null){    
+    public function getDSPData($dsp_id, $date_debut, $date_fin, array $items, $category = null, $date_update = false){    
         $max_items = 200;
         // split items in array of max_items items
         $items_chunks = array_chunk($items, $max_items, true);
@@ -308,7 +308,7 @@ class MCRepository{
         // get data for each array of items
         $data = [];
         foreach ($items_chunks as $items_chunk)
-            $data[] = $this->getDSPDataChunk($dsp_id,$date_debut,$date_fin,$items_chunk,$category);
+            $data[] = $this->getDSPDataChunk($dsp_id,$date_debut,$date_fin,$items_chunk,$category, $date_update);
         $data_count = count($data);
         $this->logger->debug('getDSPData : getting data done, data_count = '. $data_count);
         // merge datas for each nipro
@@ -547,7 +547,7 @@ class MCRepository{
 
     // ---- Helpers
 
-    private function getDSPDataChunk($dsp_id, $date_debut, $date_fin, array $items, $category = null){    
+    private function getDSPDataChunk($dsp_id, $date_debut, $date_fin, array $items, $category,$date_update = false){    
         $query_items_select = "";
         foreach($items as $item)
             $query_items_select .= ", {$dsp_id}.{$item['PAGE_NOM']}.{$item['ITEM_ID']}";
@@ -557,6 +557,10 @@ class MCRepository{
         foreach($every_page as $p_name){
             $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP AND {$dsp_id}.{$p_name}.DT_MAJ IS NOT NULL";
         }
+
+        $query_period = ($date_update === false)
+            ? " IP.DT_PRO >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY') AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')"
+            : " IP.DT_MAJ >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY') AND IP.DT_MAJ < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')";
 
         $query_category = $category === null ? '' : "AND CS.CATEG = '{$category}'"; 
         $query_get_dsp = "SELECT IP.NIPRO, 
@@ -585,8 +589,8 @@ class MCRepository{
             LEFT JOIN MIDDLECARE.INCLUSION_ETB INCLETB ON INCLETB.INTNIP = INCL.INTNIP
             JOIN MIDDLECARE.CONSULTATION CS ON CS.INTNIPRO = IP.INTNIPRO AND CS.CDPROD = '{$dsp_id}' AND CS.REVISION > 0
             {$query_items_from} 
-            WHERE IP.DT_PRO >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY')
-            AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')
+            WHERE 
+            {$query_period}
             {$query_category}
             ORDER BY IP.NIP";
 

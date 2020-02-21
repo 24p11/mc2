@@ -240,8 +240,8 @@ class DocumentRepository{
                 .$document->date_modification->format(DateHelper::MYSQL_FORMAT)."','"
                 .$document->revision."','"
                 .$document->extension."','"
-                .$document->operateur."','"
-                .$document->provisoire."','"
+                .$document->operateur."',"
+                .$document->provisoire.",'"
                 .$document->categorie."','"
                 .$document->service."',"
                 ."'', NOW(), NOW(), 0, 0)";

@@ -101,7 +101,7 @@ final class MCExtractManager{
 	 * @param array $item_names
 	 * @param boolean $date_update si true ne prendre que les données mise à jour entre date_début et date_fin (sinon on se base sur la date de creation du document)
 	 */
-	public function importDSPData($dsp_id, $date_debut, $date_fin, array $item_names, $date_update = false){
+	public function importDSPData($dsp_id, $date_debut, $date_fin, array $item_names = null, $date_update = false){
 		$log_info = array(
 			'site' => $this->site, 
 			'dsp_id' => $dsp_id,

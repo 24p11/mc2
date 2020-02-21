@@ -560,7 +560,7 @@ final class MCExtractManager{
 		return $file_name;
 	}
 	
-	private function loadDSPDataFromMCtoDB($dsp_id, $date_debut, $date_fin, array $item_names, $date_update = false){
+	private function loadDSPDataFromMCtoDB($dsp_id, $date_debut, $date_fin, array $item_names = null, $date_update = false){
 		$this->logger->debug("loadDSPDataFromMCtoDB ".$date_debut->format(DateHelper::MYSQL_FORMAT)." to ".$date_fin->format(DateHelper::MYSQL_FORMAT));
 		$now = new DateTime();
 		// get documents by category 

@@ -60,7 +60,7 @@ class MCRepository{
      * @return array [DOSSIER_ID, NOM, LIBELLE]
      */
     public function getAllDSP(){
-        $query = "SELECT CD_DOSSIER DOSSIER_ID, NOM NOM, DESCRIPTION LIBELLE, lower(SUBSTR(CD_HOP,1,3)) SITE, CD_UF UHS 
+        $query = "SELECT '".$this->site."' SITE, CD_DOSSIER DOSSIER_ID, NOM NOM, DESCRIPTION LIBELLE, lower(SUBSTR(CD_HOP,1,3)) SITE, CD_UF UHS 
             FROM middlecare.DOSSIER 
             WHERE CD_DOSSIER LIKE 'D%' ORDER BY CD_DOSSIER";
         return $this->executeQuery($query);

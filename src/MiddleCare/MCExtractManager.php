@@ -110,7 +110,7 @@ final class MCExtractManager{
 			'item_names' => $item_names
 		);
 		$this->logger->info("Importing DSP data",$log_info);
-		$interval_max = new DateInterval("P1M");// 1 mois = P1M, 2 mois = P2M, 60 jours =  P60D
+		$interval_max = new DateInterval("P7D");// 1 mois = P1M, 2 mois = P2M, 60 jours =  P60D
 		if($date_debut->diff($date_fin) < $interval_max){
 			$this->loadDSPDataFromMCtoDB($dsp_id, $date_debut, $date_fin,$item_names, $date_update);
 		}else{

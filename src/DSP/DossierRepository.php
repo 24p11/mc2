@@ -3,6 +3,7 @@ namespace MC2\DSP;
 use \PDO;
 use Psr\Log\LoggerInterface;
 use Doctrine\DBAL\DriverManager;
+use \InvalidArgumentException;
 /**
  * Dossier Repository
  * 
@@ -116,7 +117,7 @@ class DossierRepository{
 
     public function findPageByDossierId($dossier_id,array $document_types = null){
         $query_document_type = ($document_types === null || count($document_types) < 1) 
-            ? "" : "AND document_type in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
+            ? "" : "AND document_type in(".join(',',array_map(function($v){ return "'".$v."'"; },$document_types)).")";
         $query = "SELECT ".self::PAGE_COLUMNS." 
             FROM ".$this->getPageTable()." 
             WHERE dossier_id = :dossier_id 
@@ -215,7 +216,7 @@ class DossierRepository{
     }
 
     public function deleteDossier($id){
-        return $conn->delete($this->getDossierTable(), array('dossier_id' => $id));
+        return $this->db->delete($this->getDossierTable(), array('dossier_id' => $id));
     }
 
     //const PAGE_COLUMNS = "type_document, dossier_id, site, page_libelle, page_code, page_ordre, created, modified, version"; // = *
@@ -263,23 +264,23 @@ class DossierRepository{
     }
 
     public function deleteItem($id){
-        return $conn->delete($this->getItemTable(), array('item_id' => $id));
+        return $this->db->delete($this->getItemTable(), array('item_id' => $id));
     }
 
     // -------- Table Creation
 
     public function getCreateTableDossierQuery(){
         $query = "CREATE TABLE IF NOT EXISTS ".$this->getDossierTable()." (
-            `dossier_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-            `site` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-            `nom` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-            `libelle` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-            `uhs` text COLLATE utf8_unicode_ci,
-            `created` datetime DEFAULT NULL,
-            `modified` datetime DEFAULT NULL,
-            `version` int(11) DEFAULT NULL,
-            PRIMARY KEY (`dossier_id`,`site`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                `dossier_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+                `site` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+                `nom` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+                `libelle` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+                `uhs` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+                `created` datetime DEFAULT NULL,
+                `modified` datetime DEFAULT NULL,
+                `version` int DEFAULT NULL,
+                PRIMARY KEY (`dossier_id`,`site`) USING BTREE
+               ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
         return $query;
     }
 

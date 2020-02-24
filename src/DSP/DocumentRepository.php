@@ -5,6 +5,8 @@ use MC2\Core\Helper\DateHelper;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
+use \InvalidArgumentException;
+
 /**
  * Document Repository
  * 

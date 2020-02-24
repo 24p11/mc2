@@ -49,6 +49,34 @@ final class MCExtractManager{
 	private $logger = null;
 	private $output_folder = null;
 
+	// tableau des categories de documents à prendre (tout prendre si null)
+	// ex: public $categories_selection = ['120','201','402'];// ne prendre que les CRH d'hospit, les CR de consultation et les CRO
+	public $categories_selection = null;
+
+	// Rappel des codes/types des documents Mediweb :
+	// - 120  CR de sejour hospitalier 
+	// - 201  CR (ou fiche) de consultation 
+	// - 301  CR d'anatomo-pathologie 
+	// - 402  CR operatoire, CR d'accouchement 
+	// - 309  CR d'acte diagnostique (autres) 
+	// - 119  Synthese d'episode 
+	// - 111  Lettre de sortie 
+	// - 319  Resultat d'examen (autres) 
+	// - 801  Autre document, source medicale 
+	// - 302  CR de radiologie/imagerie 
+	// - 521  Notification, Certificat 
+	// - 409  CR d'acte therapeutique (autres) 
+	// - 421  Prescription de medicaments 
+	// - 429  Prescription, autre 
+	// - 511  Demande d'examen 
+	// - 422  Prescription de soins 
+	// - 431  Dispensation de medicaments 
+	// - 311  Resultats de biologie (y compris groupe sangu 
+	// - 401  CR d'anesthesie 
+	// - 203  CR de consultation d'anesthesie 
+	// - 411  Pathologie(s) en cours 
+	// - 439  Dispensation, autre 
+
 	public function __construct($source, $site, $mc_repository, $dossier_repository, $document_repository, $patient_repository, $csv_writer, LoggerInterface $logger){
 		$this->source = $source;
 		$this->site = $site;
@@ -567,6 +595,8 @@ final class MCExtractManager{
 		$mc_documents = [];
 		$categories = $this->mc_repository->getCategoriesOfPeriod($dsp_id,$date_debut,$date_fin);
 		foreach($categories as $category){
+			if($this->categories_selection !== null && count($this->categories_selection) > 0 && !in_array($category,$this->categories_selection))
+				continue;
 			$this->logger->debug("Loading documents from category: $category");
 			$items = $this->mc_repository->getDSPItemsFromDocumentCategory($dsp_id,$category);
 			$this->logger->debug("Items count : ".count($items));

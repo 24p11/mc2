@@ -1,6 +1,7 @@
 <?php
 namespace MC2\DSP;
 use \PDO;
+use \InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Doctrine\DBAL\DriverManager;
 use MC2\Core\Helper\DateHelper;
@@ -123,7 +124,7 @@ class PatientRepository{
     }
     
     public function deletePatient($patient_id, $ipp){
-        return $conn->delete($this->getPatientTable(), array('patient_id' => $patient_id, 'ipp' => $ipp));
+        return $this->db->delete($this->getPatientTable(), array('patient_id' => $patient_id, 'ipp' => $ipp));
     }
     
     // -------- Table Creation

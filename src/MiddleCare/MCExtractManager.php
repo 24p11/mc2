@@ -137,6 +137,8 @@ final class MCExtractManager{
 			'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 
 			'item_names' => $item_names
 		);
+		$this->logger->info("Removing document indexes");
+		$this->document_repository->removeFullTextIndexes();
 		$this->logger->info("Importing DSP data",$log_info);
 		$interval_max = new DateInterval("P7D");// 1 mois = P1M, 2 mois = P2M, 60 jours =  P60D
 		if($date_debut->diff($date_fin) < $interval_max){
@@ -152,6 +154,8 @@ final class MCExtractManager{
 			}
 			$this->loadDSPDataFromMCtoDB($dsp_id, $date1, $date_fin,$item_names, $date_update);
 		}
+		$this->logger->info("Adding document indexes");
+		$this->document_repository->addFullTextIndexes();
 		$this->logger->info("Imported DSP data",$log_info);
 	}
 

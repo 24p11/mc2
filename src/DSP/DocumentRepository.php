@@ -93,6 +93,16 @@ class DocumentRepository{
 
     // -------- Query
 
+    public function removeFullTextIndexes(){
+        $this->db->executeQuery('ALTER TABLE mcdsp_item_value DROP INDEX `FULLTEXT_VAL`');
+        $this->db->executeQuery('ALTER TABLE mcdsp_document DROP INDEX `FULLTEXT_TEXT`');
+    }
+    
+    public function addFullTextIndexes(){
+        $this->db->executeQuery('ALTER TABLE mcdsp_item_value ADD FULLTEXT INDEX `FULLTEXT_VAL` (`val`)');
+        $this->db->executeQuery('ALTER TABLE mcdsp_document ADD FULLTEXT INDEX `FULLTEXT_TEXT` (`text`)');
+    }
+
     public function findDocumentByDossierId($dossier_id,$date_debut, $date_fin,array $patient_ids = null){
         $query_patients = ($patient_ids === null || count($patient_ids) < 1) 
             ? "" : "AND patient_id in(".join(',',array_map(function($v){ return "'".$v."'"; },$patient_ids)).")";

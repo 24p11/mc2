@@ -5,6 +5,8 @@ use MC2\Core\Helper\DateHelper;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
+use \InvalidArgumentException;
+
 /**
  * Document Repository
  * 
@@ -90,6 +92,16 @@ class DocumentRepository{
     }
 
     // -------- Query
+
+    public function removeFullTextIndexes(){
+        $this->db->executeQuery('ALTER TABLE mcdsp_item_value DROP INDEX `FULLTEXT_VAL`');
+        $this->db->executeQuery('ALTER TABLE mcdsp_document DROP INDEX `FULLTEXT_TEXT`');
+    }
+    
+    public function addFullTextIndexes(){
+        $this->db->executeQuery('ALTER TABLE mcdsp_item_value ADD FULLTEXT INDEX `FULLTEXT_VAL` (`val`)');
+        $this->db->executeQuery('ALTER TABLE mcdsp_document ADD FULLTEXT INDEX `FULLTEXT_TEXT` (`text`)');
+    }
 
     public function findDocumentByDossierId($dossier_id,$date_debut, $date_fin,array $patient_ids = null){
         $query_patients = ($patient_ids === null || count($patient_ids) < 1) 
@@ -240,8 +252,8 @@ class DocumentRepository{
                 .$document->date_modification->format(DateHelper::MYSQL_FORMAT)."','"
                 .$document->revision."','"
                 .$document->extension."','"
-                .$document->operateur."','"
-                .$document->provisoire."','"
+                .$document->operateur."',"
+                .$document->provisoire.",'"
                 .$document->categorie."','"
                 .$document->service."',"
                 ."'', NOW(), NOW(), 0, 0)";

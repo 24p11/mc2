@@ -329,7 +329,7 @@ class MCRepository{
             }
         }
         $this->logger->debug('getDSPData : merging data done');
-        $this->logger->info("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'row_count' => count($result)));
+        $this->logger->info("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'category' => $category, 'row_count' => count($result)));
 		return $result;
     }
 

@@ -94,13 +94,23 @@ class DocumentRepository{
     // -------- Query
 
     public function removeFullTextIndexes(){
-        $this->db->executeQuery('ALTER TABLE mcdsp_item_value DROP INDEX `FULLTEXT_VAL`');
-        $this->db->executeQuery('ALTER TABLE mcdsp_document DROP INDEX `FULLTEXT_TEXT`');
+        try{
+            $this->db->executeQuery('ALTER TABLE mcdsp_item_value DROP INDEX `FULLTEXT_VAL`');
+            $this->db->executeQuery('ALTER TABLE mcdsp_document DROP INDEX `FULLTEXT_TEXT`');
+        }
+        catch (\Exception $e) {
+            $this->logger->error("Can't remove full-text indexes", array('exception' => $e));
+        }
     }
     
     public function addFullTextIndexes(){
-        $this->db->executeQuery('ALTER TABLE mcdsp_item_value ADD FULLTEXT INDEX `FULLTEXT_VAL` (`val`)');
-        $this->db->executeQuery('ALTER TABLE mcdsp_document ADD FULLTEXT INDEX `FULLTEXT_TEXT` (`text`)');
+        try{
+            $this->db->executeQuery('ALTER TABLE mcdsp_item_value ADD FULLTEXT INDEX `FULLTEXT_VAL` (`val`)');
+            $this->db->executeQuery('ALTER TABLE mcdsp_document ADD FULLTEXT INDEX `FULLTEXT_TEXT` (`text`)');
+        } 
+        catch (\Exception $e) {
+            $this->logger->error("Can't add full-text indexes", array('exception' => $e));
+        }
     }
 
     public function findDocumentByDossierId($dossier_id,$date_debut, $date_fin,array $patient_ids = null){

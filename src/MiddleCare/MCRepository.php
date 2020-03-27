@@ -169,6 +169,7 @@ class MCRepository{
             FROM all_tab_columns all_col, {$dsp_id}.DETAIL blc
             WHERE all_col.owner = '{$dsp_id}'
             AND upper(trim(all_col.COLUMN_NAME)) = upper(trim(blc.NM_OBJD))
+            AND blc.NOM_TABLE <> 'detail_patient'
             {$query_items}
             {$query_fiches}
             ORDER BY DOSSIER_ID, PAGE_NOM, BLOC_NO, LIGNE";

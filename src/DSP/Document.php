@@ -79,7 +79,7 @@ class Document{
             $document->operateur = $mc_data['OPER'];
             $document->revision = $mc_data['REVISION'];
             $document->extension = $mc_data['EXTENSION'];
-            $document->provisoire = $mc_data['CR_PROVISOIRE'];
+            $document->provisoire = isset($mc_data['CR_PROVISOIRE']) && $mc_data['CR_PROVISOIRE'] !== null ? $mc_data['CR_PROVISOIRE'] : 0;
             $document->categorie = $mc_data['CATEG'];
             $document->service = $mc_data['SERVICE'];
         }

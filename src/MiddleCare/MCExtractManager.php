@@ -593,7 +593,7 @@ final class MCExtractManager{
 		$now = new DateTime();
 		// get documents by category 
 		$mc_documents = [];
-		$categories = $this->mc_repository->getCategoriesOfPeriod($dsp_id,$date_debut,$date_fin);
+		$categories = $this->mc_repository->getCategoriesOfPeriod($dsp_id,$date_debut,$date_fin,$date_update);
 		foreach($categories as $category){
 			if($this->categories_selection !== null && count($this->categories_selection) > 0 && !in_array($category,$this->categories_selection))
 				continue;

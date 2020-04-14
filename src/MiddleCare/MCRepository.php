@@ -198,11 +198,17 @@ class MCRepository{
         return $result[0]['CATEG'];
     }
 
-    public function getCategoriesOfPeriod($dsp_id,$date_debut,$date_fin){
-        $query = "SELECT CATEG FROM MIDDLECARE.CONSULTATION 
+    public function getCategoriesOfPeriod($dsp_id,$date_debut,$date_fin, $date_update = false){
+        $query = ($date_update === false) 
+            ? "SELECT DISTINCT CATEG FROM MIDDLECARE.CONSULTATION 
             WHERE CDPROD = '{$dsp_id}'
             AND DATEXAM >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY')
             AND DATEXAM < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')
+            AND REVISION > 0"
+            : "SELECT DISTINCT CATEG FROM MIDDLECARE.CONSULTATION 
+            WHERE CDPROD = '{$dsp_id}'
+            AND DATEPUB >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY')
+            AND DATEPUB < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')
             AND REVISION > 0";
         $result = $this->executeQuery($query);
         return array_unique(array_column($result,'CATEG'));

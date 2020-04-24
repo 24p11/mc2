@@ -7,7 +7,7 @@ class CSVOption{
     // si true => discard all html entities in every cell
     public $remove_html = false;
 
-    public function __construct($excel_friendly, $remove_html = false){
+    public function __construct($excel_friendly = false, $remove_html = false){
         $this->excel_friendly = $excel_friendly;
         $this->remove_html = $remove_html;
     }

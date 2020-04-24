@@ -2,7 +2,6 @@
 namespace MC2\DSP;
 use \DateTime;
 use MC2\Core\Helper\DateHelper;
-// WIP
 class Page{
     
     public $type_document;

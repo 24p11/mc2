@@ -1,6 +1,5 @@
 <?php
 namespace MC2\Core\Helper;
-use ReflectionClass;
 /**
  * Reflection Helper
  * 

@@ -12,13 +12,8 @@ use MC2\Core\Helper\ReflectionHelper;
 use MC2\Core\Log\LoggerFactory;
 use MC2\MiddleCare\MCRepository;
 use MC2\DSP\DossierRepository;
-use MC2\DSP\Dossier;
 use MC2\DSP\DocumentRepository;
-use MC2\DSP\Document;
-use MC2\DSP\ItemValue;
 use MC2\DSP\PatientRepository;
-use MC2\DSP\Patient;
-use MC2\RedCap\RCInstrument;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');

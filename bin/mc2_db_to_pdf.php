@@ -9,19 +9,13 @@
  * > php mc2_db_to_pdf.php --dsp DSP96 --deb 20190401 --fin 20190402
  */
 require_once __DIR__.'/../vendor/autoload.php';
-use MC2\Core\Helper\DateHelper;
 use MC2\Core\Log\LoggerFactory;
 use MC2\Core\CSV\CSVWriter;
 use MC2\Core\CSV\CSVOption;
 use MC2\MiddleCare\MCExtractManager;
 use MC2\DSP\DossierRepository;
-use MC2\DSP\Dossier;
 use MC2\DSP\DocumentRepository;
-use MC2\DSP\Document;
-use MC2\DSP\ItemValue;
 use MC2\DSP\PatientRepository;
-use MC2\DSP\Patient;
-use MC2\RedCap\RCInstrument;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');
@@ -58,10 +52,7 @@ if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
     $dsp_id = $options['dsp'];
     $date_debut = new DateTime($options['deb']);
     $date_fin = new DateTime($options['fin']);
-
-    // TODO : also search by IPP
     $patient_ids = isset($options["nip"]) ? explode(" ",$options["nip"]) : null;
-    
     $documents = $document_repo->findDocumentByDossierId($dsp_id,$date_debut, $date_fin,$patient_ids);
     $count_documents = count($documents);
     $i = 1;

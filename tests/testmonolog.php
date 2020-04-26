@@ -13,4 +13,3 @@ $log->pushHandler(new StreamHandler('your.log', Logger::WARNING));
 $log->info('Foo');
 $log->warning('Bar');
 $log->error('ERRRRR');
-$log->addAlert('ALERTE!');

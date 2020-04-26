@@ -28,12 +28,12 @@ use MC2\RedCap\RCDictionnary;
  * - exportDSPDictionnaryToRedcapCSV($file_name_prefix, $dsp_id, $rc_project)
  * - exportDSPDataToRedcapCSV($file_name_prefix, $dsp_id, $date_debut, $date_fin, $rc_project)
  * 
- * - exportDSPDocumentationToMarkdown()
  */
 final class MCExtractManager{
 
 	const SRC_MIDDLECARE = 0;
 	const SRC_LOCAL_DB = 1;
+
 	public $source = null;
 	public $site = null;
 
@@ -47,35 +47,17 @@ final class MCExtractManager{
 	
 	private $csv_writer = null;
 	private $logger = null;
-	private $output_folder = null;
 
 	// tableau des categories de documents à prendre (tout prendre si null)
 	// ex: public $categories_selection = ['120','201','402'];// ne prendre que les CRH d'hospit, les CR de consultation et les CRO
 	public $categories_selection = null;
 
-	// Rappel des codes/types des documents Mediweb :
-	// - 120  CR de sejour hospitalier 
-	// - 201  CR (ou fiche) de consultation 
-	// - 301  CR d'anatomo-pathologie 
-	// - 402  CR operatoire, CR d'accouchement 
-	// - 309  CR d'acte diagnostique (autres) 
-	// - 119  Synthese d'episode 
-	// - 111  Lettre de sortie 
-	// - 319  Resultat d'examen (autres) 
-	// - 801  Autre document, source medicale 
-	// - 302  CR de radiologie/imagerie 
-	// - 521  Notification, Certificat 
-	// - 409  CR d'acte therapeutique (autres) 
-	// - 421  Prescription de medicaments 
-	// - 429  Prescription, autre 
-	// - 511  Demande d'examen 
-	// - 422  Prescription de soins 
-	// - 431  Dispensation de medicaments 
-	// - 311  Resultats de biologie (y compris groupe sangu 
-	// - 401  CR d'anesthesie 
-	// - 203  CR de consultation d'anesthesie 
-	// - 411  Pathologie(s) en cours 
-	// - 439  Dispensation, autre 
+	// interval de chargement des données (a affiner en fonction de la quantité de document du DSP) 1 semaine = P7D, 1 mois = P1M, 2 mois = P2M, 60 jours =  P60D
+	public $import_interval = "P7D"; 
+
+	public $upsert_max_document = 1000;
+	public $upsert_max_item = 200;
+	public $upser_max_patient = 1000;
 
 	public function __construct($source, $site, $mc_repository, $dossier_repository, $document_repository, $patient_repository, $csv_writer, LoggerInterface $logger){
 		$this->source = $source;
@@ -86,10 +68,9 @@ final class MCExtractManager{
 		$this->patient_repository = $patient_repository;
 		$this->csv_writer = $csv_writer;
 		$this->logger = $logger;
-		$this->output_folder =  __DIR__."/../data";
 	}
 
-	// -------- MC to DB (MiddleCare to SBIM MySQL)
+	// -------- MC to DB (MiddleCare to MySQL)
 
 	/**
 	 * Importe la liste des DSP d'un site depuis MC vers DB.
@@ -137,10 +118,8 @@ final class MCExtractManager{
 			'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 
 			'item_names' => $item_names
 		);
-		$this->logger->info("Removing document indexes");
-		$this->document_repository->removeFullTextIndexes();
 		$this->logger->info("Importing DSP data",$log_info);
-		$interval_max = new DateInterval("P7D");// 1 mois = P1M, 2 mois = P2M, 60 jours =  P60D
+		$interval_max = new DateInterval($this->import_interval);
 		if($date_debut->diff($date_fin) < $interval_max){
 			$this->loadDSPDataFromMCtoDB($dsp_id, $date_debut, $date_fin,$item_names, $date_update);
 		}else{
@@ -154,8 +133,6 @@ final class MCExtractManager{
 			}
 			$this->loadDSPDataFromMCtoDB($dsp_id, $date1, $date_fin,$item_names, $date_update);
 		}
-		$this->logger->info("Adding document indexes");
-		$this->document_repository->addFullTextIndexes();
 		$this->logger->info("Imported DSP data",$log_info);
 	}
 
@@ -263,7 +240,6 @@ final class MCExtractManager{
 		$this->logger->info("Exported DSP data to CSV file(s)",$log_info);
 		return $file_names;
 	}
-
 
 	// -------- REDCAP CSV (dictionnary.csv + data.csv)
 
@@ -419,94 +395,6 @@ final class MCExtractManager{
 		return $file_names;
 	}
 
-	// -------- Documentation
-
-	/**
-	 * Exporter la documentation de l'ensemble des DSP de MiddleCare au format MarkDown.
-	 */
-	public function exportDSPDocumentationToMarkdown(){
-		$this->logger->info("Exporting DSP documentation (as MarkDown)");
-		$all_dsp = $this->mc_repository->getAllDSP();
-		$all_dsp_info = array();
-		$item_infos_needed = array("BLOC_LIBELLE","ITEM_ID","TYPE","MCTYPE","LIBELLE_BLOC","LIBELLE_SECONDAIRE","LIST_NOM","LIST_VALUES");
-		foreach ($all_dsp as $key => $dsp){
-			$dsp_id = $dsp['DOSSIER_ID'];
-			$items = $this->mc_repository->getDSPItems($dsp_id);
-			$tmp = ArrayHelper::filter($items, array('PAGE_NOM','PAGE_LIBELLE'));
-			$pages = array();
-			foreach ($tmp as $value)
-				$pages[$value['PAGE_NOM']] = $value['PAGE_LIBELLE']; 
-				
-			$all_dsp_info[$dsp_id] = array(
-				'nom' => str_replace(["/"], ' ', $dsp['NOM']),
-				'description' => $dsp['LIBELLE'],
-				'pages' => $pages === null ? [] : $pages,
-				'items' => $items === null ? [] : $items
-			);
-		}
-		$helper_md_header = '<meta charset="utf-8">'.PHP_EOL;
-		$helper_md_title_line = "===============================================================================".PHP_EOL;
-		$helper_md_subtitle_line = "-------------------------------------------------------------------------------".PHP_EOL;
-		$helper_md_markdown_js_line = '<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>'.PHP_EOL;
-
-		// ---- MD Index File
-		$main_md = array($helper_md_header);
-		$main_md[] = '**MiddleCare - DSP**'.PHP_EOL;
-		// pour chaque DSP
-		foreach($all_dsp_info as $dsp_id => $dsp_info){
-			$dsp_items_info = $dsp_info['items'];
-			$dsp_title = "[{$dsp_id}] {$dsp_info['nom']}";
-			$dsp_has_any_items = count($dsp_items_info) > 0;
-			$dsp_pages = array_unique(array_column($dsp_items_info, 'page_nom'));
-			$dsp_description = "- Description : {$dsp_info['description']}";
-			$dsp_count_page = "- Nombre de pages : **".($dsp_has_any_items ? count($dsp_pages) : 0)."**";
-			$dsp_count_items = "- Nombre d'items : **".($dsp_has_any_items ? count(array_unique(array_column($dsp_items_info, 'ITEM_ID'))): 0)."**";
-			$dsp_file_name = 'middle_care_dsp_'.($dsp_has_any_items ? '' : 'empty_').strtolower($dsp_id."__".$dsp_info['nom']).'.md.html';
-
-			$main_md[] = $dsp_title.PHP_EOL;
-			$main_md[] = $helper_md_title_line;
-			// overview
-			$main_md[] = $dsp_description.PHP_EOL;
-			$main_md[] = $dsp_count_page.PHP_EOL;
-			$main_md[] = $dsp_count_items.PHP_EOL;
-			$main_md[] = "- Détails : <a href='{$dsp_file_name}'>{$dsp_file_name}</a>".PHP_EOL;
-			$main_md[] = PHP_EOL;
-
-			// ---- MD Single DSP File
-			$dsp_md = array($helper_md_header);
-			$dsp_md[] = "**MiddleCare - {$dsp_title}**".PHP_EOL;
-			$dsp_md[] = "Overview".PHP_EOL;
-			$dsp_md[] = $helper_md_title_line;
-			// overview
-			$dsp_md[] = $dsp_description.PHP_EOL;
-			$dsp_md[] = $dsp_count_page.PHP_EOL;
-			$dsp_md[] = $dsp_count_items.PHP_EOL;
-			$dsp_md[] = "Pages / Items".PHP_EOL;
-			$dsp_md[] = $helper_md_title_line;
-			// split item by page
-			foreach($dsp_pages as $dsp_page){
-				$dsp_md[] = $dsp_info['pages'][$dsp_page]." [{$dsp_page}]".PHP_EOL;
-				$dsp_md[] = $helper_md_subtitle_line;
-				// display items in table
-				if($dsp_has_any_items === true){
-					$selected_items_info = ArrayHelper::filter($dsp_items_info, $item_infos_needed, array('PAGE_NOM' => array($dsp_page)));
-					$dsp_md[] = join('|',array_keys($selected_items_info[0])).PHP_EOL;
-					for ($i = 0; $i < count($selected_items_info[0]) - 1; $i++)
-						$dsp_md[] = "----|";
-					$dsp_md[] = "----".PHP_EOL;
-					foreach($selected_items_info as $key => $items){
-						$dsp_md[] = join('|',array_map(function($v){ return str_replace('|', '/', htmlentities($v)); }, $items)).PHP_EOL;
-					}
-				}
-			}
-			$dsp_md[] = $helper_md_markdown_js_line;
-			file_put_contents($this->output_folder."/{$dsp_file_name}",$dsp_md);
-		}
-		$main_md[] = $helper_md_markdown_js_line;
-		file_put_contents($this->output_folder.'/middle_care_dsp.md.html',$main_md);
-		$this->logger->info("Exported DSP documentation (as MarkDown)");
-	}
-
 	// -------- Helpers 
 
 	private function isSourceMiddleCare(){
@@ -597,7 +485,7 @@ final class MCExtractManager{
 		$now = new DateTime();
 		// get documents by category 
 		$mc_documents = [];
-		$categories = $this->mc_repository->getCategoriesOfPeriod($dsp_id,$date_debut,$date_fin);
+		$categories = $this->mc_repository->getCategoriesOfPeriod($dsp_id,$date_debut,$date_fin,$date_update);
 		foreach($categories as $category){
 			if($this->categories_selection !== null && count($this->categories_selection) > 0 && !in_array($category,$this->categories_selection))
 				continue;
@@ -615,11 +503,6 @@ final class MCExtractManager{
 
 			$mc_documents = array_merge($mc_documents,$tmp_mc_documents);
 			
-			// TODO set in configuration
-			$batch_size_document = 1000;
-			$batch_size_item = 100;
-			$batch_size_patient = 1000;
-	
 			$i = 0;
 			$documents = array();
 			$item_values = array();
@@ -639,20 +522,20 @@ final class MCExtractManager{
 					$patient_ids[] = $patient->id;
 				}
 			
-				// Upsert documents every $batch_size_document document
-				if($i % $batch_size_document === 0){
+				// Upsert documents every upsert_max_document documents
+				if($i % $this->upsert_max_document === 0){
 					$this->document_repository->upsertDocuments($documents);
 					$this->logger->debug("Upserted ".count($documents)." documents");
 					$documents = array();
 				}
-				// Upsert item values every $batch_size_item documents
-				if($i % $batch_size_item === 0){
+				// Upsert item values every upsert_max_item item values
+				if($i % $this->upsert_max_item === 0){
 					$this->document_repository->upsertItemValues($item_values);
 					$this->logger->debug("Upserted ".count($item_values)." item values");
 					$item_values = array();
 				}
-				// Upsert patients every $batch_size_patient documents
-				if($i % $batch_size_patient === 0){
+				// Upsert patients every upser_max_patient patients
+				if($i % $this->upser_max_patient === 0){
 					$this->patient_repository->upsertPatients($patients);
 					$this->logger->debug("Upserted ".count($patients)." patients");
 					$patients = array();
@@ -685,11 +568,6 @@ final class MCExtractManager{
 		$this->document_repository->deleteDocumentsAndItemValues($nipros);
 		$this->logger->debug("Deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
 		
-		// TODO set in configuration
-		$batch_size_document = 1000;
-		$batch_size_item = 100;
-		$batch_size_patient = 1000;
-
 		$i = 0;
 		$documents = array();
 		$item_values = array();
@@ -709,20 +587,20 @@ final class MCExtractManager{
 				$patient_ids[] = $patient->id;
 			}
 		
-			// Upsert documents every $batch_size_document document
-			if($i % $batch_size_document === 0){
+			// Upsert documents every upsert_max_document documents
+			if($i % $this->upsert_max_document === 0){
 				$this->document_repository->upsertDocuments($documents);
 				$this->logger->debug("Upserted ".count($documents)." documents");
 				$documents = array();
 			}
-			// Upsert item values every $batch_size_item documents
-			if($i % $batch_size_item === 0){
+			// Upsert item values every upsert_max_item items
+			if($i % $this->upsert_max_item === 0){
 				$this->document_repository->upsertItemValues($item_values);
 				$this->logger->debug("Upserted ".count($item_values)." item values");
 				$item_values = array();
 			}
-			// Upsert patients every $batch_size_patient documents
-			if($i % $batch_size_patient === 0){
+			// Upsert patients every upser_max_patient patients
+			if($i % $this->upser_max_patient === 0){
 				$this->patient_repository->upsertPatients($patients);
 				$this->logger->debug("Upserted ".count($patients)." patients");
 				$patients = array();

@@ -153,7 +153,7 @@ class DocumentRepository{
             {$query_patients}
             {$query_type_doc}
             ORDER BY patient_id, date_creation";
-
+        
         $stmt = $this->db->prepare($query);
         $stmt->bindValue("dossier_id", $dossier_id);
         $stmt->bindValue("date_debut", $date_debut->format(DateHelper::MYSQL_FORMAT));
@@ -350,13 +350,14 @@ class DocumentRepository{
         return $count;
     }
 
-    public function deleteDocumentsAndItemValues(array $nipros, array $item_names = null){
+    public function deleteDocumentsAndItemValues($dsp_id, array $nipros, array $item_names = null){
         $query_items = ($item_names === null || count($item_names) < 1) 
             ? "" : "AND var in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
-        $query_deleted_document = "UPDATE ".$this->getDocumentTable()." SET deleted = 1 WHERE site = :site AND nipro IN (:nipros)";
-        $query_deleted_item_values = "UPDATE ".$this->getItemValueTable()." SET deleted = 1 WHERE site = :site AND nipro IN(:nipros) {$query_items}";
-        $values = array('site' => $this->site, 'nipros' => $nipros);
-        $types = array('site' => PDO::PARAM_STR, 'nipros' => Connection::PARAM_INT_ARRAY);
+        $query_deleted_document = "UPDATE ".$this->getDocumentTable()." SET deleted = 1 WHERE dossier_id = :dossier_id AND site = :site AND nipro IN (:nipros)";
+        $query_deleted_item_values = "UPDATE ".$this->getItemValueTable()." SET deleted = 1 WHERE dossier_id = :dossier_id AND site = :site AND nipro IN(:nipros) {$query_items}";
+
+        $values = array('dossier_id'=> $dsp_id, 'site' => $this->site, 'nipros' => $nipros);
+        $types = array('dossier_id'=> PDO::PARAM_STR, 'site' => PDO::PARAM_STR, 'nipros' => Connection::PARAM_INT_ARRAY);
         $stmt = $this->db->executeUpdate($query_deleted_document,$values,$types);
         $stmt = $this->db->executeUpdate($query_deleted_item_values,$values,$types);
     }

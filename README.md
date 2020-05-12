@@ -331,7 +331,7 @@ README.md
 Annexe - schéma bases de données MySQL
 ===============================================================================
 
-![schéma bases de données MySQL](docs/schemas/schema_mysql_2019-07-24.md.png)
+![schéma bases de données MySQL](docs/schemas/schema.png)
 
 Annexe - formats CSV
 ===============================================================================

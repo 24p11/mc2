@@ -498,7 +498,7 @@ final class MCExtractManager{
 			// Delete document and item values
 			$nipros = array_unique(array_column($tmp_mc_documents, 'NIPRO'));
 			$this->logger->debug(join(",",$nipros));
-			$this->document_repository->deleteDocumentsAndItemValues($nipros, $item_names);
+			$this->document_repository->deleteDocumentsAndItemValues($dsp_id, $nipros, $item_names);
 			$this->logger->debug("Deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
 
 			$mc_documents = array_merge($mc_documents,$tmp_mc_documents);
@@ -565,7 +565,7 @@ final class MCExtractManager{
 		$patients = array();
 		// Delete document and item values
 		$nipros = array_unique(array_column($mc_documents, 'NIPRO'));
-		$this->document_repository->deleteDocumentsAndItemValues($nipros);
+		$this->document_repository->deleteDocumentsAndItemValues($dsp_id, $nipros);
 		$this->logger->debug("Deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
 		
 		$i = 0;

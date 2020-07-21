@@ -20,6 +20,7 @@ use MC2\DSP\PatientRepository;
 use Symfony\Component\Yaml\Yaml;
 
 date_default_timezone_set('Europe/Paris');
+ini_set('memory_limit', '2048M');
 
 if ($argc < 2) {
     echo "

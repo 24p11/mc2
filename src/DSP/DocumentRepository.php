@@ -19,7 +19,7 @@ class DocumentRepository{
     const DOCUMENT_COLUMNS = "nipro,patient_id,dossier_id,site,type,venue,patient_age,patient_poids,patient_taille,date_creation,date_modification,revision,extension,operateur,provisoire,categorie,service,text,created,modified,version,deleted";// = *
 
     const DEFAULT_ITEM_VALUE_TABLE = "mcdsp_item_value";
-    const ITEM_VALUE_COLUMNS = "nipro,patient_id,dossier_id,site,page_nom,var,val,created,modified,version,deleted";// = *
+    const ITEM_VALUE_COLUMNS = "nipro,patient_id,dossier_id,site,page_nom,var,val,list_index,created,modified,version,deleted";// = *
 
     const DEFAULT_ITEM_TABLE = "mcdsp_item";
 
@@ -193,7 +193,8 @@ class DocumentRepository{
     }
 
     public function findAllPatientId($dossier_id, $date_debut, $date_fin){
-        $query = "SELECT DISTINCT patient_id FROM ".$this->getDocumentTable()." 
+        $query = "SELECT DISTINCT patient_id 
+            FROM ".$this->getDocumentTable()." 
             WHERE dossier_id = :dossier_id 
             AND deleted = 0 
             AND date_creation >= :date_debut
@@ -279,8 +280,8 @@ class DocumentRepository{
 
     public function upsertItemValue($item_value){
         $query = "INSERT INTO ".$this->getItemValueTable()." (".self::ITEM_VALUE_COLUMNS.") 
-            VALUES(:item_value_id, :patient_id, :dossier_id, :site, :page_nom, :var, :val, NOW(), NOW(), 0, 0)
-            ON DUPLICATE KEY UPDATE page_nom = VALUES(page_nom), var = VALUES(var), val = VALUES(val), modified = VALUES(modified), version = version + 1, deleted = 0";
+            VALUES(:item_value_id, :patient_id, :dossier_id, :site, :page_nom, :var, :val, :list_index, NOW(), NOW(), 0, 0)
+            ON DUPLICATE KEY UPDATE page_nom = VALUES(page_nom), var = VALUES(var), val = VALUES(val), list_index = VALUES(list_index), modified = VALUES(modified), version = version + 1, deleted = 0";
         $stmt = $this->db->prepare($query); 
         $stmt->bindValue('item_value_id', $item_value->id);
         $stmt->bindValue('patient_id', $item_value->patient_id);
@@ -289,6 +290,7 @@ class DocumentRepository{
         $stmt->bindValue('page_nom', $item_value->page_nom);
         $stmt->bindValue('var', $item_value->var);
         $stmt->bindValue('val', $item_value->val);
+        $stmt->bindValue('list_index', $item_value->list_index);
         $count = $stmt->execute();
         return $count;
     }
@@ -307,12 +309,13 @@ class DocumentRepository{
                 .$this->site."','"
                 .$item_value->page_nom."','"
                 .$item_value->var."',"
-                .$this->db->quote($item_value->val)
-                .", NOW(), NOW(), 0, 0)";
+                .$this->db->quote($item_value->val).",'"
+                .$item_value->list_index
+                ."', NOW(), NOW(), 0, 0)";
             $count_value--;
             $query .= ($count_value === 0) ? "" : ",";
         }
-        $query .= " ON DUPLICATE KEY UPDATE page_nom = VALUES(page_nom), var = VALUES(var), val = VALUES(val), modified = VALUES(modified), version = version + 1, deleted = 0";
+        $query .= " ON DUPLICATE KEY UPDATE page_nom = VALUES(page_nom), var = VALUES(var), val = VALUES(val), list_index = VALUES(list_index), modified = VALUES(modified), version = version + 1, deleted = 0";
         
         $stmt = $this->db->prepare($query); 
         $count = $stmt->execute();
@@ -406,6 +409,7 @@ class DocumentRepository{
             `page_nom` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `var` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
             `val` longtext COLLATE utf8_unicode_ci,
+            `list_index` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
             `created` datetime DEFAULT NULL,
             `modified` datetime DEFAULT NULL,
             `version` int(11) DEFAULT NULL,

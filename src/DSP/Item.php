@@ -106,4 +106,19 @@ class Item{
         $result['LIST_VALUES'] = $this->list_values;
         return $result;
     }
+
+    public function isList(){
+        return $this->mctype === "LD";
+    }
+
+    public static function getIndexFromChoiceValue($value, $values_as_string){
+        $choices = explode('|', $values_as_string);
+		foreach ($choices as $choice) {
+			if(preg_match("/([^,]+), (.*)/",$choice,$matches) > 0){
+                if($matches[2] === $value)
+                    return $matches[1];
+            }
+		}
+		return null;
+    }
 }

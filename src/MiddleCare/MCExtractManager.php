@@ -19,7 +19,6 @@ use MC2\RedCap\RCDictionnary;
  * - importAllDSPMetadata()
  * - importDSPDictionnary($dsp_id)
  * - importDSPData($dsp_id, $date_debut, $date_fin, array $item_names = null,$date_update = false)
- * - importDSPDocumentData(dsp_id, $nipro, array $item_names = null)
  * 
  * - exportAllDSPMetadataToCSV()
  * - exportDSPDictionnaryToCSV($dsp_id, array $item_names = null)
@@ -133,18 +132,6 @@ final class MCExtractManager{
 			}
 			$this->loadDSPDataFromMCtoDB($dsp_id, $date1, $date_fin,$item_names, $date_update);
 		}
-		$this->logger->info("Imported DSP data",$log_info);
-	}
-
-	public function importDSPDocumentData($dsp_id, $nipro, array $item_names = null){
-		$log_info = array(
-			'site' => $this->site, 
-			'dsp_id' => $dsp_id,
-			'nipro' => $nipro, 
-			'item_names' => $item_names
-		);
-		$this->logger->info("Importing DSP data",$log_info);
-		$this->loadDSPDocumentDataFromMCtoDB($dsp_id, $nipro,$item_names);
 		$this->logger->info("Imported DSP data",$log_info);
 	}
 
@@ -552,70 +539,6 @@ final class MCExtractManager{
 			$this->document_repository->updateDocumentsFullText($nipros);
 			$this->logger->debug("Updated ".count($nipros)." documents fulltext");
 		}
-	}
-
-	private function loadDSPDocumentDataFromMCtoDB($dsp_id, $nipro){
-		$this->logger->debug("loadDSPDocumentDataFromMCtoDB ".$nipro);
-		$now = new DateTime();
-		// Get data 
-		$document_category = $this->mc_repository->getCategoryOfDocument($nipro);
-		$items = $this->mc_repository->getDSPItemsFromDocumentCategory($dsp_id,$document_category);
-		$mc_documents = $this->mc_repository->getDSPDataFromNIPRO($dsp_id, $nipro, $items);
-		$this->logger->debug("Getting DSP data took ".$now->diff(new DateTime())->format('%H:%I:%S'));
-		$patients = array();
-		// Delete document and item values
-		$nipros = array_unique(array_column($mc_documents, 'NIPRO'));
-		$this->document_repository->deleteDocumentsAndItemValues($dsp_id, $nipros);
-		$this->logger->debug("Deleted documents and item values after ".$now->diff(new DateTime())->format('%H:%I:%S'));
-		
-		$i = 0;
-		$documents = array();
-		$item_values = array();
-		$patients = array();
-		$patient_ids = array();
-		
-		foreach ($mc_documents as $mc_document){
-			$documents[] = Document::createFromMCData($this->document_repository->base_url,$this->site,$dsp_id,$mc_document);
-			foreach($items as $item){
-				$item_value = ItemValue::createFromMCData($dsp_id,$item,$mc_document);
-				if(!empty($item_value->val))
-					$item_values[] = $item_value;
-			}
-			$patient = Patient::createFromMCData($mc_document);
-			if(!in_array($patient->id,$patient_ids)){
-				$patients[] = $patient;
-				$patient_ids[] = $patient->id;
-			}
-		
-			// Upsert documents every upsert_max_document documents
-			if($i % $this->upsert_max_document === 0){
-				$this->document_repository->upsertDocuments($documents);
-				$this->logger->debug("Upserted ".count($documents)." documents");
-				$documents = array();
-			}
-			// Upsert item values every upsert_max_item items
-			if($i % $this->upsert_max_item === 0){
-				$this->document_repository->upsertItemValues($item_values);
-				$this->logger->debug("Upserted ".count($item_values)." item values");
-				$item_values = array();
-			}
-			// Upsert patients every upser_max_patient patients
-			if($i % $this->upser_max_patient === 0){
-				$this->patient_repository->upsertPatients($patients);
-				$this->logger->debug("Upserted ".count($patients)." patients");
-				$patients = array();
-			}
-			$i++;
-		}
-		$this->document_repository->upsertDocuments($documents);
-		$this->document_repository->upsertItemValues($item_values);
-		$this->patient_repository->upsertPatients($patients);
-		$this->logger->debug("Upserted ".count($documents)." documents");
-		$this->logger->debug("Upserted ".count($item_values)." item values");
-		$this->logger->debug("Upserted ".count($patients)." patients");
-		
-		$this->document_repository->updateDocumentsFullText($nipros);
-		$this->logger->debug("Updated ".count($nipros)." documents fulltext");
 	}
 
 	// ---- CSV Helpers

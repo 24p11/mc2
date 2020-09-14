@@ -71,7 +71,6 @@ if ($argc < 2) {
     - dsp : identifiant du DSP (ex: DSP2)
     - deb (optionnal) : date de début au format YYYYMMDD
     - fin (optionnal) : date de fin au format YYYYMMDD
-    - nipro (optionnal) : identifiant du document
     
     EXAMPLES
     - Extraire la liste des DSP de MiddleCare et les enregistrer dans la base locale :
@@ -82,14 +81,11 @@ if ($argc < 2) {
 
     - Extraire les données d'un DSP MiddleCare pour une période donnée et les enregistrer dans la base locale :
     > php mc2_mc_to_db.php --site sls --dsp DSP2 --deb 20180101 --fin 20180201
-    
-    - Extraire les données d'un DSP MiddleCare pour un document et les enregistrer dans la base locale :
-    > php mc2_mc_to_db.php --site sls --dsp DSP2 --nipro 123456789
     ";
     exit(1);
 }
 
-$longopts = array("dict", "dsp:", "deb:", "fin:","items:","site:","nipro:");
+$longopts = array("dict", "dsp:", "deb:", "fin:","items:","site:");
 $options = getopt("", $longopts);
 
 $now = new DateTime();
@@ -127,11 +123,6 @@ if(isset($options['dict'])){
         $date_fin = new DateTime($options['fin']);
         $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
         $mc_extracter->importDSPData($dsp_id,$date_debut,$date_fin,$item_names);
-    }else if(isset($options['dsp']) && isset($options['nipro'])){
-        $dsp_id = $options['dsp'];
-        $nipro = $options['nipro'];
-        $item_names = isset($options["items"]) ? explode(" ",$options["items"]) : null;
-        $mc_extracter->importDSPDocumentData($dsp_id, $nipro, $item_names);
     }else{
         $logger->info("Unknown parameters",array('options' => $options));
     }

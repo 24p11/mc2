@@ -106,6 +106,8 @@ class MCRepository{
      * @return array [DSP_ID,PAGE_NOM,PAGE_LIB,BLOC_NO,BLOC_LIB,ITEM_LIGNE,ITEM_ID,ITEM_TYPE,ITEM_MCTYPE,ITEM_LIB,ITEM_LIB_BLOC,ITEM_LIB_SECONDAIRE,DETAIL,TYP_CRTL,FORMULE,OPTIONS,LISTE_NOM]
      */
     public function getDSPItems($dsp_id, array $item_names = null, array $page_names = null){
+        if(substr($dsp_id, 0, 3 ) === "SER")
+            return [];
         $query_items = ($item_names === null || count($item_names) < 1) 
             ? "" : "AND all_col.column_name in(".join(',',array_map(function($v){ return "'".$v."'"; },$item_names)).")";
         $query_pages = ($page_names === null || count($page_names) < 1)
@@ -259,44 +261,6 @@ class MCRepository{
         return $result;
     }
 
-    public function getDSPfromIPP($ipps){
-        $dsps = [];
-        $starting_with = ["DCS","DDS","DSP","SER"];
-        $query_in_ipps = "'".join("','",$ipps)."'";
-        $query = "SELECT *
-            FROM middlecare.INCLUSION INC
-            LEFT JOIN middlecare.INCLUSION_ETB ETB ON INC.NIP = ETB.INTNIP
-            WHERE ETB.ID_PATIENT_ETB IN ({$query_in_ipps})";
-        $rows = $this->executeQuery($query);
-        foreach($rows as $row){
-            foreach($row as $key => $value){
-                if (in_array(substr($key,0,3),$starting_with) && !in_array($key,$dsps) && $value === "1")
-                    $dsps[] = $key;
-            }
-        }
-        return $dsps;
-    }
-
-    /**
-     * Retourne l'ensemble des IPP des patients dans un DSP et une période donnée.
-     * 
-     * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
-     * @param \DateTime $date_debut
-     * @param \DateTime $date_fin
-     * @return string[] liste d'IPP
-     */
-    public function getAllIPP($dsp_id, $date_debut, $date_fin){
-        $query = "SELECT DISTINCT ETB.ID_PATIENT_ETB as IPP
-            FROM {$dsp_id}.INCLUSION_PROCEDURE IP
-            LEFT JOIN middlecare.INCLUSION INCL ON INCL.NIP = IP.NIP
-            LEFT JOIN middlecare.INCLUSION_ETB ETB ON ETB.INTNIP = INCL.INTNIP
-            WHERE IP.DT_PRO >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY')
-            AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')";
-        $result = array_column($this->executeQuery($query),'IPP');
-        $this->logger->info("Retrieved all IPPs", array('dsp_id' => $dsp_id, 'row_count' => count($result)));
-        return $result;
-    }
-
     /**
      * Retourne les données d'un DSP pour une période donnée.
      * 
@@ -314,8 +278,12 @@ class MCRepository{
         $this->logger->debug('getDSPData : chunking done', ['items_chunks_count' => count($items_chunks)]);
         // get data for each array of items
         $data = [];
-        foreach ($items_chunks as $items_chunk)
-            $data[] = $this->getDSPDataChunk($dsp_id,$date_debut,$date_fin,$items_chunk,$category, $date_update);
+        if(count($items_chunks) === 0){
+            $data[] = $this->getDSPDataChunk($dsp_id,$date_debut,$date_fin,[],$category,$date_update);
+        }else{
+            foreach ($items_chunks as $items_chunk)
+                $data[] = $this->getDSPDataChunk($dsp_id,$date_debut,$date_fin,$items_chunk,$category,$date_update);
+        }
         $data_count = count($data);
         $this->logger->debug('getDSPData : getting data done, data_count = '. $data_count);
         // merge datas for each nipro
@@ -341,60 +309,7 @@ class MCRepository{
     }
     
     // TODO merger / factoriser les 3 ou 4 methodes suivantes ...
-    /**
-     * Retourne les données d'un document dans un DSP
-     * 
-     * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
-     * @param string $nipro identifiant du document
-     * @param string[] $item_names (option)
-     * @return array [NIPRO,IPP,NIP,NOM,PRENOM,DATNAI,SEXE,AGE,POIDS,TAILLE,TYPE_EXAM,VENUE,DATE_EXAM,DATE_MAJ,OPER,REVISION,EXTENSION,CATEG,CR_PROVISOIRE,SERVICE,...ITEMS DU DSP...]
-     */
-    public function getDSPDataFromNIPRO($dsp_id, $nipro, array $items){    
-        $every_page = array_unique(array_column($items, 'PAGE_NOM'));
-        
-        $query_items_select = "";
-        foreach($items as $item)
-            $query_items_select .= ", {$dsp_id}.{$item['PAGE_NOM']}.{$item['ITEM_ID']}";
-        
-        $query_items_from = "";
-        foreach($every_page as $p_name)
-            $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP";
 
-        $query_get_dsp = "SELECT IP.NIPRO, 
-            INCLETB.ID_PATIENT_ETB AS IPP, 
-            INCL.NIP, 
-            INCL.NOM, 
-            INCL.PNOM AS PRENOM, 
-            to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
-            INCL.SEXE, 
-            IP.AGE_DTPRO AS AGE, 
-            IP.POIDS, 
-            IP.TAILLE, 
-            IP.TP_EXM AS TYPE_EXAM, 
-            IP.VENUE, 
-            to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, 
-            to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, 
-            IP.OPER,
-            CS.REVISION, 
-            CS.EXTENSION, 
-            CS.CATEG, 
-            CS.CR_PROVISOIRE, 
-            IP.SERVICE
-            {$query_items_select}
-            FROM MIDDLECARE.INCLUSION INCL
-            INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP
-            LEFT JOIN MIDDLECARE.INCLUSION_ETB INCLETB ON INCLETB.INTNIP = INCL.INTNIP
-            LEFT JOIN MIDDLECARE.CONSULTATION CS ON CS.INTNIPRO = IP.INTNIPRO AND CS.CDPROD = '{$dsp_id}'
-            {$query_items_from} 
-            WHERE IP.NIPRO = '{$nipro}'
-            ORDER BY IP.NIP";
-
-        $this->logger->debug("query_get_dsp", array('query' => $query_get_dsp));
-        $result = $this->executeQuery($query_get_dsp);
-        $this->logger->info("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'nipro' => $nipro, 'row_count' => count($result)));
-		return $result;
-    }
-    
     public function getDocumentFromNDA(array $ndas){
         $query_in_ndas = "'".join("','",$ndas)."'";
         $query = "SELECT CS.CDPROD AS DSP_ID,
@@ -427,65 +342,10 @@ class MCRepository{
 		return $result;
     }
 
-    /**
-     * YAGNI!
-     * Retourne les données d'un DSP pour une liste d'IPP.
-     * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
-     * @param string[] $ipps liste d'IPP
-     * @param string[] $item_names (option) liste d'item à garder
-     * @param string $page_name (option) nom de la page à garder
-     * @return array 
-     */
-    public function getDSPDataFromIPP($dsp_id, array $ipps, array $item_names = null, $page_name = null){
-        $items = $this->getDSPItems($dsp_id,$item_names,$page_name);
-        $every_page = array_unique(array_column($items,'PAGE_NOM'));
-        
-        $query_items_select = "";
-        foreach($items as $item)
-            $query_items_select .= ", {$dsp_id}.{$item['PAGE_NOM']}.{$item['ITEM_ID']}";
-        
-        $query_items_from = "";
-        foreach($every_page as $p_name)
-            $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP AND {$dsp_id}.{$p_name}.DT_MAJ IS NOT NULL";
-
-        $query_in_ipps = "'".join("','",$ipps)."'";
-        $query_get_data = "SELECT IP.NIPRO, 
-            INCLETB.ID_PATIENT_ETB AS IPP, 
-            IP.NIP, 
-            INCL.NOM, 
-            INCL.PNOM AS PRENOM, 
-            to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
-            INCL.SEXE, 
-            IP.AGE_DTPRO AS AGE, 
-            IP.POIDS, 
-            IP.TAILLE, 
-            IP.TP_EXM AS TYPE_EXAM, 
-            IP.VENUE, 
-            to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, 
-            to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, 
-            IP.OPER,
-            CS.REVISION, 
-            CS.EXTENSION, 
-            CS.CATEG, 
-            CS.CR_PROVISOIRE, 
-            IP.SERVICE
-            {$query_items_select}
-            FROM MIDDLECARE.INCLUSION INCL
-            INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP
-            LEFT JOIN MIDDLECARE.INCLUSION_ETB INCLETB ON INCLETB.INTNIP = INCL.INTNIP
-            JOIN MIDDLECARE.CONSULTATION CS ON CS.INTNIPRO = IP.INTNIPRO AND CS.CDPROD = '{$dsp_id}' AND CS.REVISION > 0
-            {$query_items_from} 
-            WHERE INCLETB.ID_PATIENT_ETB IN ({$query_in_ipps})
-            ORDER BY INCLETB.ID_PATIENT_ETB, IP.DT_PRO";
-        
-        $result = array('dsp_id' => $dsp_id, 'items' => $items, 'data' => $this->executeQuery($query_get_data));
-        $this->logger->info("Retrieved DSP data of IPPs={$query_in_ipps} for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id,'IPPs' => $query_in_ipps, 'page_name' => $page_name, 'row_count' => count($result['data'])));
-		return $result;
-    }
-
     // ---- Helpers
 
-    private function getDSPDataChunk($dsp_id, $date_debut, $date_fin, array $items, $category,$date_update = false){    
+    private function getDSPDataChunk($dsp_id, $date_debut, $date_fin, array $items, $category, $date_update = false){    
+
         $query_items_select = "";
         foreach($items as $item)
             $query_items_select .= ", {$dsp_id}.{$item['PAGE_NOM']}.{$item['ITEM_ID']}";
@@ -535,7 +395,58 @@ class MCRepository{
         $this->logger->debug("query_get_dsp", array('query' => $query_get_dsp));
         $result = $this->executeQuery($query_get_dsp);
         $this->logger->debug("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'items_count'=> count($items), 'row_count' => count($result)));
-		return $result;
+        return $result;
+        
+        // $query_items_select = "";
+        // foreach($items as $item)
+        //     $query_items_select .= ", {$dsp_id}.{$item['PAGE_NOM']}.{$item['ITEM_ID']}";
+        
+        // $every_page = array_unique(array_column($items, 'PAGE_NOM'));
+        // $query_items_from = "";
+        // foreach($every_page as $p_name){
+        //     $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP AND {$dsp_id}.{$p_name}.DT_MAJ IS NOT NULL";
+        // }
+
+        // $query_period = ($date_update === false)
+        //     ? " IP.DT_PRO >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY') AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')"
+        //     : " IP.DT_MAJ >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY') AND IP.DT_MAJ < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')";
+
+        // $query_category = $category === null ? '' : "AND CS.CATEG = '{$category}'"; 
+        // $query_get_dsp = "SELECT IP.NIPRO, 
+        //     INCLETB.ID_PATIENT_ETB AS IPP, 
+        //     IP.NIP, 
+        //     INCL.NOM, 
+        //     INCL.PNOM AS PRENOM, 
+        //     to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
+        //     INCL.SEXE, 
+        //     IP.AGE_DTPRO AS AGE, 
+        //     IP.POIDS, 
+        //     IP.TAILLE, 
+        //     IP.TP_EXM AS TYPE_EXAM, 
+        //     IP.VENUE, 
+        //     to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, 
+        //     to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, 
+        //     IP.OPER,
+        //     CS.REVISION, 
+        //     CS.EXTENSION, 
+        //     CS.CATEG, 
+        //     CS.CR_PROVISOIRE, 
+        //     IP.SERVICE
+        //     {$query_items_select}
+        //     FROM MIDDLECARE.INCLUSION INCL
+        //     INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP
+        //     LEFT JOIN MIDDLECARE.INCLUSION_ETB INCLETB ON INCLETB.INTNIP = INCL.INTNIP
+        //     JOIN MIDDLECARE.CONSULTATION CS ON CS.INTNIPRO = IP.INTNIPRO AND CS.CDPROD = '{$dsp_id}' AND CS.REVISION > 0
+        //     {$query_items_from} 
+        //     WHERE 
+        //     {$query_period}
+        //     {$query_category}
+        //     ORDER BY IP.NIP";
+
+        // $this->logger->debug("query_get_dsp", array('query' => $query_get_dsp));
+        // $result = $this->executeQuery($query_get_dsp);
+        // $this->logger->debug("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'items_count'=> count($items), 'row_count' => count($result)));
+		// return $result;
     }
 
     /**

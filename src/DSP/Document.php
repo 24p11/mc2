@@ -129,7 +129,7 @@ class Document{
     public function getURL($revision = null){
         $revision = ($this->revision === 0)
             ? ""
-            : ($revision === null || $revision < 1 || $revision > $this->revision) ? $this->revision : $revision;
+            : (($revision === null || $revision < 1 || $revision > $this->revision) ? $this->revision : $revision);
         return $this->base_url."/".$this->patient_id."/".$this->dossier_id."/".$this->id."_".$revision.$this->extension;
     }
 }

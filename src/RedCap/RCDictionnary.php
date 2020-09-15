@@ -146,17 +146,16 @@ class RCDictionnary{
 	}
 
 	public function searchItem($var_name,$document_type = null){
-		if($this->project->event_as_document_type === false){
+		if($this->project->event_as_document_type === false)
 			return $this->items[$var_name];
-		}else{
-			$var_name_event = $var_name. "_".$document_type;
-			foreach ($this->items as $item) {
-				$item_found = ($var_name === $item[self::FIELD_NAME_INDEX])
-					|| (substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name_event)) === $var_name_event)
-					|| (substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name)) === $var_name);
-				if($item_found === true)
-					return $item;
-			}
+		
+		$var_name_event = $var_name. "_".$document_type;
+		foreach ($this->items as $item) {
+			$item_found = ($var_name === $item[self::FIELD_NAME_INDEX])
+				|| (substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name_event)) === $var_name_event)
+				|| (substr($item[self::FIELD_NAME_INDEX], 0, strlen($var_name)) === $var_name);
+			if($item_found === true)
+				return $item;
 		}
 		return null;
 	}

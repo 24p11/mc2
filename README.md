@@ -303,13 +303,6 @@ php bin/mc2_db_to_rc.php --dsp DSP96 --deb 20180101 --fin 20190101 --long --inst
 
 8 - Profit !
 
-TODO 
-===============================================================================
-
-- refactoring : tables OMOP friendly
-- doc : ajouter CSV anonymisés d'exemple à l'annexe Format CSV
-
-
 Annexe - Arborescence
 ===============================================================================
 
@@ -412,10 +405,6 @@ CSV RedCap (Dictionnaire + Données)
 ----------------------------
 
 Voir documentation REDCAP.  
-
-Exemples : 
-- TODO ajouter CSV dictionnaire RedCap d'exemple
-- TODO ajout CSV données (long | flat) d'exemple
 
 Annexe - Lexique
 ===============================================================================

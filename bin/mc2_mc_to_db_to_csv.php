@@ -92,7 +92,6 @@ if(isset($options['dsp']) && isset($options['deb']) && isset($options['fin'])){
     $mc_extracter->importDSPData($dsp_id,$date_debut,$date_fin,$item_names);
     $mc_extracter->exportDSPDataToCSV($dsp_id, $date_debut, $date_fin,$item_names,$page_name,$type_doc,$period);
 
-    // TODO DELETE DSP DATA ?    
 }else{
     $logger->info("Unknown parameters",array('options' => $options));
 }

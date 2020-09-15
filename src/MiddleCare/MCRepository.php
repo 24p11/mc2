@@ -396,57 +396,6 @@ class MCRepository{
         $result = $this->executeQuery($query_get_dsp);
         $this->logger->debug("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'items_count'=> count($items), 'row_count' => count($result)));
         return $result;
-        
-        // $query_items_select = "";
-        // foreach($items as $item)
-        //     $query_items_select .= ", {$dsp_id}.{$item['PAGE_NOM']}.{$item['ITEM_ID']}";
-        
-        // $every_page = array_unique(array_column($items, 'PAGE_NOM'));
-        // $query_items_from = "";
-        // foreach($every_page as $p_name){
-        //     $query_items_from .= " LEFT JOIN {$dsp_id}.{$p_name} ON {$dsp_id}.{$p_name}.NIPRO = IP.NIPRO AND INCL.NIP = {$dsp_id}.{$p_name}.NIP AND {$dsp_id}.{$p_name}.DT_MAJ IS NOT NULL";
-        // }
-
-        // $query_period = ($date_update === false)
-        //     ? " IP.DT_PRO >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY') AND IP.DT_PRO < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')"
-        //     : " IP.DT_MAJ >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY') AND IP.DT_MAJ < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')";
-
-        // $query_category = $category === null ? '' : "AND CS.CATEG = '{$category}'"; 
-        // $query_get_dsp = "SELECT IP.NIPRO, 
-        //     INCLETB.ID_PATIENT_ETB AS IPP, 
-        //     IP.NIP, 
-        //     INCL.NOM, 
-        //     INCL.PNOM AS PRENOM, 
-        //     to_char(INCL.DATNAI,'YYYY-MM-DD') AS DATNAI,
-        //     INCL.SEXE, 
-        //     IP.AGE_DTPRO AS AGE, 
-        //     IP.POIDS, 
-        //     IP.TAILLE, 
-        //     IP.TP_EXM AS TYPE_EXAM, 
-        //     IP.VENUE, 
-        //     to_char(IP.DT_PRO,'YYYY-MM-DD') AS DATE_EXAM, 
-        //     to_char(IP.DT_MAJ,'YYYY-MM-DD') AS DATE_MAJ, 
-        //     IP.OPER,
-        //     CS.REVISION, 
-        //     CS.EXTENSION, 
-        //     CS.CATEG, 
-        //     CS.CR_PROVISOIRE, 
-        //     IP.SERVICE
-        //     {$query_items_select}
-        //     FROM MIDDLECARE.INCLUSION INCL
-        //     INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP
-        //     LEFT JOIN MIDDLECARE.INCLUSION_ETB INCLETB ON INCLETB.INTNIP = INCL.INTNIP
-        //     JOIN MIDDLECARE.CONSULTATION CS ON CS.INTNIPRO = IP.INTNIPRO AND CS.CDPROD = '{$dsp_id}' AND CS.REVISION > 0
-        //     {$query_items_from} 
-        //     WHERE 
-        //     {$query_period}
-        //     {$query_category}
-        //     ORDER BY IP.NIP";
-
-        // $this->logger->debug("query_get_dsp", array('query' => $query_get_dsp));
-        // $result = $this->executeQuery($query_get_dsp);
-        // $this->logger->debug("Retrieved DSP data for DSP_ID={$dsp_id}", array('dsp_id' => $dsp_id, 'date_debut' => $date_debut->format(DateHelper::MYSQL_FORMAT), 'date_fin' => $date_fin->format(DateHelper::MYSQL_FORMAT), 'items_count'=> count($items), 'row_count' => count($result)));
-		// return $result;
     }
 
     /**

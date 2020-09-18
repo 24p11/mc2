@@ -106,14 +106,13 @@ class PatientRepository{
         $query = "INSERT INTO ".$this->getPatientTable()." (".self::PATIENT_COLUMNS.") VALUES";
         $count_patient = count($patients);
         foreach($patients as $patient){
-            $query .= "('"
-                .$patient->id."','"
-                .$patient->ipp."','"
-                .$patient->nom."','"
-                .$patient->prenom."','"
-                .$patient->ddn->format(DateHelper::MYSQL_FORMAT)."','"
-                .$patient->sexe."',"
-                ." NOW(), NOW(), 0)";
+            $query .= "(".$this->db->quote($patient->id).","
+                .$this->db->quote($patient->ipp).","
+                .$this->db->quote($patient->nom).","
+                .$this->db->quote($patient->prenom).","
+                .$this->db->quote($patient->ddn->format(DateHelper::MYSQL_FORMAT)).","
+                .$this->db->quote($patient->sexe)
+                .", NOW(), NOW(), 0)";
             $count_patient--;
             $query .= ($count_patient === 0) ? "" : ",";
         }

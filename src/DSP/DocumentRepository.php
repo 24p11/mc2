@@ -266,8 +266,8 @@ class DocumentRepository{
                 .$document->operateur."',"
                 .$document->provisoire.",'"
                 .$document->categorie."','"
-                .$document->service."',"
-                ."'', NOW(), NOW(), 0, 0)";
+                .$document->service
+                ."','', NOW(), NOW(), 0, 0)";
             $count_document--;
             $query .= ($count_document === 0) ? "" : ",";
         }

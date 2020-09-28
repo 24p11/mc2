@@ -69,6 +69,60 @@ final class MCExtractManager{
 		$this->logger = $logger;
 	}
 
+	/**
+	 * Retourne les items d'un DSP (depuis MiddleCare ou la base Locale)
+	 * 
+	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
+	 */
+	public function getItems($dsp_id,$event_as_document = false){
+		$item_infos = array();
+		if($event_as_document === false){
+			$items = $this->isSourceMiddleCare() 
+				? $this->mc_repository->getDSPItems($dsp_id)
+				: array_map(function($v){ return $v->toMCArray(); }, $this->dossier_repository->findItemByDossierId($dsp_id));
+		}else{
+			$items = array();
+			// get document_type
+			$pages = $this->dossier_repository->findPageByDossierId($dsp_id);
+			$doc_types = array_unique(array_map(function($p){ return $p->type_document; }, $pages));
+			// get pages for every document_type
+			$doc_pages = array();
+			$i = 0;
+			foreach ($doc_types as $doc_type) {
+				$doc_pages[$doc_type] = array();
+				foreach ($pages as $page) {
+					// do not take page_code = 4 (donnée d'inclusion)
+					if($page->page_code === 4)
+						continue;
+					if($page->type_document === $doc_type)
+						$doc_pages[$doc_type][] = $page;
+				}
+				usort($doc_pages[$doc_type], function($a, $b){ return strcmp($a->page_ordre, $b->page_ordre); });
+				foreach($doc_pages[$doc_type] as $page){
+					// get all item of page (and add current doc_type)
+					$temp_items = $this->dossier_repository->findItemByDossierIdAndPage($dsp_id, $page->page_libelle);
+					// add doc type to each items
+					foreach ($temp_items as $key => $value){
+						$temp_items[$key]->document_type = $doc_type;
+						$temp_items[$key]->bloc_libelle = $temp_items[$key]->page_libelle;
+						$temp_items[$key]->page_libelle = $doc_type;
+						$temp_items[$key]->id = $temp_items[$key]->id."_".$doc_type;
+					}
+					$items = array_merge($items, $temp_items);
+				}
+			}
+			$items = array_map(function($v){ return $v->toMCArray(); }, $items);
+		}
+		foreach ($items as $item){
+			$item_id = $item['ITEM_ID']; 
+			// Cas particulier des items séparateurs (MCTYPE = 'SEP') où l'item_id est null dans MiddleCare
+			if(empty($item_id))
+				$item_id = $item['MCTYPE']."_".$item['LIGNE'];
+			$item_infos[] = $item;
+		}
+		return $item_infos;
+	}
+
 	// -------- MC to DB (MiddleCare to MySQL)
 
 	/**
@@ -390,60 +444,6 @@ final class MCExtractManager{
 
 	private function getSourceName(){
 		return $this->source === self::SRC_MIDDLECARE ? "MiddleCare" : "Local DB";
-	}
-
-	/**
-	 * Retourne les items d'un DSP (depuis MiddleCare ou la base Locale)
-	 * 
-	 * @param string $dsp_id identifiant du DSP, ex: 'DSP2'
-	 */
-	private function getItems($dsp_id,$event_as_document = false){
-		$item_infos = array();
-		if($event_as_document === false){
-			$items = $this->isSourceMiddleCare() 
-				? $this->mc_repository->getDSPItems($dsp_id)
-				: array_map(function($v){ return $v->toMCArray(); }, $this->dossier_repository->findItemByDossierId($dsp_id));
-		}else{
-			$items = array();
-			// get document_type
-			$pages = $this->dossier_repository->findPageByDossierId($dsp_id);
-			$doc_types = array_unique(array_map(function($p){ return $p->type_document; }, $pages));
-			// get pages for every document_type
-			$doc_pages = array();
-			$i = 0;
-			foreach ($doc_types as $doc_type) {
-				$doc_pages[$doc_type] = array();
-				foreach ($pages as $page) {
-					// do not take page_code = 4 (donnée d'inclusion)
-					if($page->page_code === 4)
-						continue;
-					if($page->type_document === $doc_type)
-						$doc_pages[$doc_type][] = $page;
-				}
-				usort($doc_pages[$doc_type], function($a, $b){ return strcmp($a->page_ordre, $b->page_ordre); });
-				foreach($doc_pages[$doc_type] as $page){
-					// get all item of page (and add current doc_type)
-					$temp_items = $this->dossier_repository->findItemByDossierIdAndPage($dsp_id, $page->page_libelle);
-					// add doc type to each items
-					foreach ($temp_items as $key => $value){
-						$temp_items[$key]->document_type = $doc_type;
-						$temp_items[$key]->bloc_libelle = $temp_items[$key]->page_libelle;
-						$temp_items[$key]->page_libelle = $doc_type;
-						$temp_items[$key]->id = $temp_items[$key]->id."_".$doc_type;
-					}
-					$items = array_merge($items, $temp_items);
-				}
-			}
-			$items = array_map(function($v){ return $v->toMCArray(); }, $items);
-		}
-		foreach ($items as $item){
-			$item_id = $item['ITEM_ID']; 
-			// Cas particulier des items séparateurs (MCTYPE = 'SEP') où l'item_id est null dans MiddleCare
-			if(empty($item_id))
-				$item_id = $item['MCTYPE']."_".$item['LIGNE'];
-			$item_infos[] = $item;
-		}
-		return $item_infos;
 	}
 
 	private function exportDSPDataToCSVChunck($dsp_id, $date_debut, $date_fin, array $item_names = null, $page_name = null,$type_doc = null, $date_update = false){

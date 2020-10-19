@@ -7,12 +7,12 @@ class CSVWriter{
     private $output_folder = null;
     private $options = null;
     
-    public function __construct($options,LoggerInterface $logger){
-		$this->output_folder =  __DIR__."/../../data";
-		$this->setOptions($options);
+    public function __construct($options,LoggerInterface $logger, $output_folder = null){
+        $this->setOptions($options);
 		$this->logger = $logger;
-	}
-
+        $this->setOutputFolder($output_folder);
+    }
+    
 	/**
 	 * @params \SBIM\Core\CSV\CSVOption $options 
 	 */
@@ -25,6 +25,14 @@ class CSVWriter{
 	 */
 	public static function getDefaultOptions(){
 		return new CSVOption();
+    }
+
+    public function setOutputFolder($output_folder){
+		$this->output_folder = $output_folder === null ? __DIR__."/../../data" : $output_folder;
+    }
+
+    public function getOuputFolder(){
+        return $this->output_folder;
     }
     
     /**

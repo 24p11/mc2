@@ -264,7 +264,7 @@ final class MCExtractManager{
 		$file_names = array();
 		$interval = $interval === null ? "P1M" : $interval;
 		$interval_max = new DateInterval($interval);
-		if($date_debut->diff($date_fin) < $interval_max){
+		if($date_debut->diff($date_fin)->format('a') < $interval_max->format('a')){
 			$file_names[] = $this->exportDSPDataToCSVChunck($dsp_id,$date_debut,$date_fin,$item_names,$page_name,$type_doc);
 		}else{
 			$date1 = clone $date_debut;

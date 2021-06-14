@@ -361,6 +361,9 @@ class MCRepository{
             : " IP.DT_MAJ >= to_date('".$date_debut->format("d-m-Y")."','DD-MM-YYYY') AND IP.DT_MAJ < to_date('".$date_fin->format("d-m-Y")."','DD-MM-YYYY')";
 
         $query_category = $category === null ? '' : "AND CS.CATEG = '{$category}'"; 
+
+        // WIP 
+        $query_provisoire_only = false ? " AND CS.REVISION > 0 " : "";
         $query_get_dsp = "SELECT IP.NIPRO, 
             INCLETB.ID_PATIENT_ETB AS IPP, 
             IP.NIP, 
@@ -385,7 +388,8 @@ class MCRepository{
             FROM MIDDLECARE.INCLUSION INCL
             INNER JOIN {$dsp_id}.INCLUSION_PROCEDURE IP ON IP.NIP = INCL.NIP
             LEFT JOIN MIDDLECARE.INCLUSION_ETB INCLETB ON INCLETB.INTNIP = INCL.INTNIP
-            JOIN MIDDLECARE.CONSULTATION CS ON CS.INTNIPRO = IP.INTNIPRO AND CS.CDPROD = '{$dsp_id}' AND CS.REVISION > 0
+            JOIN MIDDLECARE.CONSULTATION CS ON CS.INTNIPRO = IP.INTNIPRO AND CS.CDPROD = '{$dsp_id}' 
+            {$query_provisoire_only}
             {$query_items_from} 
             WHERE 
             {$query_period}
